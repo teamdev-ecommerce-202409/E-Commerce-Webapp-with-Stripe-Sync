@@ -1,0 +1,92 @@
+@startuml activity
+start
+:ホーム;
+split
+    if (アカウントがあるか) then (yes)
+        :ログイン;
+        if (管理者アカウントか) then (yes)
+            :管理者権限でログイン;
+            :ダッシュボード(管理者);
+            split
+                :製品詳細;
+                split
+                    :製品削除;
+                    kill
+                split again
+                    :在庫更新;
+                    kill
+                end split
+            split again
+                :製品追加;
+                kill
+            split again
+                :注文状況照会;
+                :注文ステータス変更;
+                kill
+            end split
+        else (no)
+        endif
+    else (no)
+        :サインアップ;
+        :メール認証;
+    endif
+    :ホームへ戻る;
+    kill
+split again
+    split
+        split
+            split
+                :製品検索;
+            split again
+                :フィルタリング;
+            end split
+            :製品一覧;
+        split again
+        end split
+        :製品ビュー;
+        split
+            :カートに追加;
+        split again
+            :星評価;
+            floating note left: ログイン時のみ可能 =>
+            kill
+        split again
+            :コメント;
+            kill
+        split again
+            :お気に入り;
+            kill
+        split again
+            :ウィッシュリスト追加;
+            kill
+        end split
+    split again
+    end split
+split again
+    :プロファイル;
+    floating note right: ログイン時のみ
+    split
+        :購入履歴;
+        split
+            :請求書発行;
+            kill
+        split again
+            :領収書発行;
+            kill
+        split again
+            :注文状況照会;
+            kill
+        split again
+            :デジタル製品DL;
+            kill
+        end split
+    split again
+        :ウィッシュリスト表示・編集;
+        kill
+    end split
+end split
+:カート;
+:チェックアウト;
+:メール送信;
+stop
+@enduml
