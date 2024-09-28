@@ -21,16 +21,17 @@ docker build -t django_mysql_image .
 docker container run \
   --name django_mysql_container \
   -p 8081:8080 \
-  -v /path/to/your/local/directory:/var/lib/mysql \
+  -v /path/to/mysql/data:/var/lib/mysql \
+  -v /path/to/src:/var/lib/mysql \
   django_mysql_image
 ```
 
-### docker hubからイメージを取得して実行
+### docker hubからイメージを取得して実行(後日作成)
 ```
-docker pull genji1/django-tutorial
+docker pull genji1/XXXXXXXX
 docker container run \
   --name django_mysql_container \
   -p 8081:8080 \
   -v /path/to/your/local/directory:/var/lib/mysql \
-  genji1/django-tutorial
+  genji1/XXXXXXXX
 ```

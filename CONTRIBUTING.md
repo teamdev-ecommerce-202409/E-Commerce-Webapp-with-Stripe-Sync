@@ -1,3 +1,47 @@
+# 開発環境セットアップ
+
+## リポジトリクローン、仮想環境作成
+```
+git clone <リポジトリのURL>
+python3 -m venv venv
+venv/bin/pip install --upgrade pip
+venv/bin/pip install -r requirements.txt
+touch .env                  # ファイル内容は後続を参照
+source venv/bin/activate    # 仮想環境に入る
+deactivate                  # 仮想環境を抜ける(開発環境を抜けるときに使用)
+```
+
+## .envファイル
+```
+MYSQL_DB_NAME=＜アプリで使用するデータベースの名前＞
+MYSQL_TEST_DB_NAME=test_＜アプリで使用するデータベースの名前＞
+MYSQL_ROOT_PASSWORD=＜rootユーザーのパスワード＞
+MYSQL_APP_USER=＜appユーザーの名前＞
+MYSQL_APP_USER_PASSWORD=＜appユーザーのパスワード＞
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_ENGINE=django.db.backends.mysql
+```
+
+# 開発手順
+- ブランチ戦略に沿ってブランチ作成
+- 仮想環境に入る `source venv/bin/activate`
+- コーディング
+- modelsに修正があればmigrationファイルを作成 `python3 src/manage.py makemigrations clothes_shop`
+- (コンテナ内で)テスト実施 `python3 manage.py test`
+
+# Docker
+```
+mkdir mysql/data
+docker build -t django_mysql_image .
+docker container run \
+  --name django_mysql_container \
+  -p 8081:8080 \
+  -v $(pwd)/mysql/data:/var/lib/mysql \
+  -v $(pwd)/src:/django/src \
+  django_mysql_image
+```
+
 # ブランチ戦略
 
 ## 1. `main` ブランチ
