@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from .models import (
     Brand,
     CartItem,
-    Clothes,
     ClothesType,
     Favorite,
     Order,
@@ -23,7 +22,6 @@ from .models import (
 from .serializers import (
     BrandSerializer,
     CartItemSerializer,
-    ClothesSerializer,
     ClothesTypeSerializer,
     FavoriteSerializer,
     OrderItemSerializer,
@@ -40,67 +38,50 @@ from .serializers import (
 
 
 @api_view(["GET", "POST"])
-def clothes_list(request):
+def product_list(request):
     """
-    List all clothes, or create a cloth.
+    List all products, or create a product.
     """
     if request.method == "GET":
-        clothes = Clothes.objects.all()
-        serializer = ClothesSerializer(clothes, many=True)
+        product = Product.objects.all()
+        serializer = ProductSerializer(product, many=True)
         return Response(serializer.data)
-
     elif request.method == "POST":
-        serializer = ClothesSerializer(data=request.data)
+        serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["PUT", "DELETE"])
-def clothes_detail(request, pk):
+@api_view(["GET", "PUT", "DELETE"])
+def product_detail(request, pk):
     """
-    Update or delete a cloth.
+    Get a product, or update/delete a product.
     """
     try:
-        cloth = Clothes.objects.get(pk=pk)
-    except Clothes.DoesNotExist:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
+    except Exception:
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    if request.method == "PUT":
-        serializer = ClothesSerializer(cloth, data=request.data, partial=True)
+    if request.method == "GET":
+        serializer = ProductSerializer(product, many=False)
+        return Response(serializer.data)
+    elif request.method == "PUT":
+        serializer = ProductSerializer(product, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     elif request.method == "DELETE":
-        cloth.delete()
+        product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# # Clothes API Views
-
-# class ClothesListCreateView(generics.ListCreateAPIView):
-#     queryset = Clothes.objects.all()
-#     serializer_class = ClothesSerializer
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         if serializer.is_valid():
-#             self.perform_create(serializer)
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class ClothesDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Clothes.objects.all()
-#     serializer_class = ClothesSerializer
-
-#     def get_object(self):
-#         return get_object_or_404(Clothes, pk=self.kwargs.get('pk'))
-
-# Product API Views
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProductListCreateView(generics.ListCreateAPIView):

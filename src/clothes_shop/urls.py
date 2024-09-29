@@ -1,17 +1,11 @@
 from django.urls import path
 
-# from clothes import views
 from . import views
 
 urlpatterns = [
-    path("api/clothes/", views.clothes_list),
-    path("api/clothes/<int:pk>/", views.clothes_detail),
-    # # Clothes API URLs
-    # path('api/clothes/', views.ClothesListCreateView.as_view(), name='clothes-list-create'),
-    # path('api/clothes/<int:pk>/', views.ClothesDetailView.as_view(), name='clothes-detail'),
     # Product API URLs
-    path("api/products/", views.ProductListCreateView.as_view(), name="product-list-create"),
-    path("api/products/<int:pk>/", views.ProductDetailView.as_view(), name="product-detail"),
+    path("api/products/", views.product_list, name="product-list"),
+    path("api/products/<int:pk>/", views.product_detail, name="product-detail"),
     # Order API URLs
     path("api/orders/", views.OrderListCreateView.as_view(), name="order-list-create"),
     path("api/orders/<int:pk>/", views.OrderDetailView.as_view(), name="order-detail"),
