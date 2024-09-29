@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import (
     Brand,
     CartItem,
-    Clothes,
     ClothesType,
     Favorite,
     Order,
@@ -17,18 +16,6 @@ from .models import (
     User,
     WishList,
 )
-
-
-# Clothes Serializer
-class ClothesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Clothes
-        fields = ("id", "name", "price", "description")
-
-    def validate_description(self, value):
-        if not isinstance(self.initial_data.get("description"), str):
-            raise serializers.ValidationError("Description must be a string.")
-        return value
 
 
 # Product Serializer (for detail view)
