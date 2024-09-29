@@ -24,7 +24,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = (
             "id",
-            "title",
+            "name",
             "description",
             "price",
             "stock_quantity",
@@ -33,6 +33,10 @@ class ProductSerializer(serializers.ModelSerializer):
             "target",
             "clothes_type",
             "brand",
+            "category",
+            "is_deleted",
+            "created_at",
+            "updated_at",
         )
 
 
