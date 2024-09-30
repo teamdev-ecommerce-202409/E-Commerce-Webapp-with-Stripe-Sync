@@ -27,7 +27,6 @@ from .serializers import (
     OrderItemSerializer,
     OrderSerializer,
     PaymentSerializer,
-    ProductListSerializer,
     ProductSerializer,
     RatingSerializer,
     ShippingSerializer,
@@ -45,7 +44,7 @@ def product_list(request):
     """
     if request.method == "GET":
         product = Product.objects.all()
-        serializer = ProductListSerializer(product, many=True)
+        serializer = ProductSerializer(product, many=True)
         return Response(serializer.data)
     elif request.method == "POST":
         serializer = ProductSerializer(data=request.data)

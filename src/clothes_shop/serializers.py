@@ -18,7 +18,34 @@ from .models import (
 )
 
 
-# Product Serializer (for detail view)
+class SizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Size
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
+class TargetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Target
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
+class ClothesTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClothesType
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
@@ -38,14 +65,12 @@ class ProductSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-
-
-# Product List Serializer (for listing products)
-class ProductListSerializer(serializers.ListSerializer):
-    child = ProductSerializer()
-
-    def create(self, validated_data):
-        return [Product(**item) for item in validated_data]
+        read_only_fields = (
+            "id",
+            "is_deleted",
+            "created_at",
+            "updated_at",
+        )
 
 
 # Order Serializer (for detail view)
@@ -133,27 +158,3 @@ class ShippingSerializer(serializers.ModelSerializer):
             "shipping_address",
             "address_code",
         )
-
-
-class SizeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Size
-        fields = ("id", "size_name", "created_at", "updated_at")
-
-
-class TargetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Target
-        fields = ("id", "target_type", "created_at", "updated_at")
-
-
-class ClothesTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClothesType
-        fields = ("id", "clothes_type_name", "created_at", "updated_at")
-
-
-class BrandSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Brand
-        fields = ("id", "brand_name", "created_at", "updated_at")

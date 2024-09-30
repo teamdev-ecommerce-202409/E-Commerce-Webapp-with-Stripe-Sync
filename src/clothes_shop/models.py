@@ -11,12 +11,12 @@ class Size(models.Model):
 
 
 class Target(models.Model):
-    target_type = models.CharField(max_length=50, unique=True)  # メンズ、レディース、キッズなど
+    name = models.CharField(max_length=50, unique=True)  # メンズ、レディース、キッズなど
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.target_type
+        return self.name
 
 
 class ClothesType(models.Model):
@@ -53,7 +53,7 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class User(models.Model):

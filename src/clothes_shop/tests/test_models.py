@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from django.test import TestCase
 
@@ -9,14 +9,14 @@ class ProductModelTest(TestCase):
 
     def setUp(self):
         self.size = Size.objects.create(name="XL")
-        self.target = Target.objects.create(target_type="メンズ")
+        self.target = Target.objects.create(name="メンズ")
         self.cloth_type = ClothesType.objects.create(name="シャツ")
         self.brand = Brand.objects.create(name="NIKE")
         self.product = Product.objects.create(
-            size="XL",
-            target="メンズ",
-            clothes_type="シャツ",
-            brand="NIKE",
+            size=self.size,
+            target=self.target,
+            clothes_type=self.cloth_type,
+            brand=self.brand,
             name="テスト用につくったシャツ",
             description="てすと",
             category="服",
@@ -27,10 +27,10 @@ class ProductModelTest(TestCase):
         )
 
     def test_product_creation(self):
-        self.assertEqual(self.product.size, "XL")
-        self.assertEqual(self.product.target, "メンズ")
-        self.assertEqual(self.product.clothes_type, "シャツ")
-        self.assertEqual(self.product.brand, "NIKE")
+        self.assertEqual(self.product.size, self.size)
+        self.assertEqual(self.product.target, self.target)
+        self.assertEqual(self.product.clothes_type, self.cloth_type)
+        self.assertEqual(self.product.brand, self.brand)
         self.assertEqual(self.product.name, "テスト用につくったシャツ")
         self.assertEqual(self.product.description, "てすと")
         self.assertEqual(self.product.category, "服")
