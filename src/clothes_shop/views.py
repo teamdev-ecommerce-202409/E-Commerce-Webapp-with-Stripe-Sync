@@ -283,3 +283,29 @@ class BrandDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return get_object_or_404(Brand, pk=self.kwargs.get("pk"))
+
+
+@api_view(["GET"])
+def category_list(request):
+    """
+    Retrieve all category data: Sizes, Targets, Clothes Types, and Brands.
+    """
+    sizes = Size.objects.all()
+    targets = Target.objects.all()
+    clothes_types = ClothesType.objects.all()
+    brands = Brand.objects.all()
+
+    size_serializer = SizeSerializer(sizes, many=True)
+    target_serializer = TargetSerializer(targets, many=True)
+    clothes_type_serializer = ClothesTypeSerializer(clothes_types, many=True)
+    brand_serializer = BrandSerializer(brands, many=True)
+
+    # すべてのカテゴリデータをまとめて返す
+    data = {
+        "sizeCatgory": size_serializer.data,
+        "targetCatgory": target_serializer.data,
+        "typeCatgory": clothes_type_serializer.data,
+        "brandCatgory": brand_serializer.data,
+    }
+
+    return Response(data)
