@@ -6,8 +6,8 @@ app_name = "clothes_shop"
 
 urlpatterns = [
     # Product API URLs
-    path("api/products/", views.product_list, name="product-list"),
-    path("api/products/<int:pk>/", views.product_detail, name="product-detail"),
+    path("api/products/", views.ProductListView.as_view(), name="product-list"),
+    path("api/products/<int:pk>/", views.ProductDetailView.as_view(), name="product-detail"),
     # Order API URLs
     path("api/orders/", views.OrderListCreateView.as_view(), name="order-list-create"),
     path("api/orders/<int:pk>/", views.OrderDetailView.as_view(), name="order-detail"),
