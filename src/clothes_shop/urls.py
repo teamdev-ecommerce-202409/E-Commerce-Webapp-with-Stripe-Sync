@@ -59,5 +59,5 @@ urlpatterns = [
     path("api/brands/", views.BrandListCreateView.as_view(), name="brand-list-create"),
     path("api/brands/<int:pk>/", views.BrandDetailView.as_view(), name="brand-detail"),
     # ALL Categories
-    path("api/categories/", views.category_list, name="category-list"),
+    path("api/categories/", views.CategoryListView.as_view(), name="category-list"),
 ]

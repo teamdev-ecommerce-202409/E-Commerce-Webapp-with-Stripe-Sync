@@ -249,27 +249,26 @@ class BrandDetailView(generics.RetrieveUpdateDestroyAPIView):
         return get_object_or_404(Brand, pk=self.kwargs.get("pk"))
 
 
-@api_view(["GET"])
-def category_list(request):
-    """
-    Retrieve all category data: Sizes, Targets, Clothes Types, and Brands.
-    """
-    sizes = Size.objects.all()
-    targets = Target.objects.all()
-    clothes_types = ClothesType.objects.all()
-    brands = Brand.objects.all()
+class CategoryListView(APIView):
+    def get(self, request):
 
-    size_serializer = SizeSerializer(sizes, many=True)
-    target_serializer = TargetSerializer(targets, many=True)
-    clothes_type_serializer = ClothesTypeSerializer(clothes_types, many=True)
-    brand_serializer = BrandSerializer(brands, many=True)
+        # 全４種のカテゴリのデータを全て返す
+        sizes = Size.objects.all()
+        targets = Target.objects.all()
+        clothes_types = ClothesType.objects.all()
+        brands = Brand.objects.all()
 
-    # すべてのカテゴリデータをまとめて返す
-    data = {
-        "sizeCatgory": size_serializer.data,
-        "targetCatgory": target_serializer.data,
-        "typeCatgory": clothes_type_serializer.data,
-        "brandCatgory": brand_serializer.data,
-    }
+        size_serializer = SizeSerializer(sizes, many=True)
+        target_serializer = TargetSerializer(targets, many=True)
+        clothes_type_serializer = ClothesTypeSerializer(clothes_types, many=True)
+        brand_serializer = BrandSerializer(brands, many=True)
 
-    return Response(data)
+        # すべてのカテゴリデータをまとめて返す
+        data = {
+            "sizeCatgory": size_serializer.data,
+            "targetCatgory": target_serializer.data,
+            "typeCatgory": clothes_type_serializer.data,
+            "brandCatgory": brand_serializer.data,
+        }
+
+        return Response(data)
