@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import (
     Brand,
     CartItem,
-    Clothes,
     ClothesType,
     Favorite,
     Order,
@@ -19,25 +18,40 @@ from .models import (
 )
 
 
-# Clothes Serializer
-class ClothesSerializer(serializers.ModelSerializer):
+class SizeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Clothes
-        fields = ("id", "name", "price", "description")
-
-    def validate_description(self, value):
-        if not isinstance(self.initial_data.get("description"), str):
-            raise serializers.ValidationError("Description must be a string.")
-        return value
+        model = Size
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
 
 
-# Product Serializer (for detail view)
+class TargetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Target
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
+class ClothesTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClothesType
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
             "id",
-            "title",
+            "name",
             "description",
             "price",
             "stock_quantity",
@@ -46,15 +60,17 @@ class ProductSerializer(serializers.ModelSerializer):
             "target",
             "clothes_type",
             "brand",
+            "category",
+            "is_deleted",
+            "created_at",
+            "updated_at",
         )
-
-
-# Product List Serializer (for listing products)
-class ProductListSerializer(serializers.ListSerializer):
-    child = ProductSerializer()
-
-    def create(self, validated_data):
-        return [Product(**item) for item in validated_data]
+        read_only_fields = (
+            "id",
+            "is_deleted",
+            "created_at",
+            "updated_at",
+        )
 
 
 # Order Serializer (for detail view)
@@ -142,27 +158,3 @@ class ShippingSerializer(serializers.ModelSerializer):
             "shipping_address",
             "address_code",
         )
-
-
-class SizeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Size
-        fields = ("id", "size_name", "created_at", "updated_at")
-
-
-class TargetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Target
-        fields = ("id", "target_type", "created_at", "updated_at")
-
-
-class ClothesTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClothesType
-        fields = ("id", "clothes_type_name", "created_at", "updated_at")
-
-
-class BrandSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Brand
-        fields = ("id", "brand_name", "created_at", "updated_at")
