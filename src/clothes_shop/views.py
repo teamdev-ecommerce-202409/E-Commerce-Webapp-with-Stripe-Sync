@@ -51,6 +51,35 @@ class ProductListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ProductListFilteredView(APIView):
+    # Home画面からフィルタした製品のリストを取得する
+    def get(self, request):
+        # クエリパラメータの取得
+        size_id = request.query_params.get("size")
+        target_id = request.query_params.get("target")
+        clothes_type_id = request.query_params.get("clothes_type")
+        brand_id = request.query_params.get("brand")
+        # keyword = request.query_params.get('keyword')
+
+        # フィルタの作成
+        filters = {"is_deleted": False, "release_date__lt": timezone.now()}
+        if size_id:
+            filters["size_id"] = size_id
+        if target_id:
+            filters["target_id"] = target_id
+        if clothes_type_id:
+            filters["clothes_type_id"] = clothes_type_id
+        if brand_id:
+            filters["brand_id"] = brand_id
+
+        # フィルタを適用してProductオブジェクトを取得
+        products = Product.objects.filter(**filters)
+
+        # シリアライズしてレスポンスを返す
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class ProductDetailView(APIView):
     def get_object(self, pk):
         try:
