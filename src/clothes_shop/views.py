@@ -80,7 +80,7 @@ class ProductListFilteredView(APIView):
         # keywordのフィルタ追加
         if keyword:
             # 製品名か説明にキーワードが入ることを条件に追加
-            products = products.filter(title__icontains=keyword) | products.filter(
+            products = products.filter(name__icontains=keyword) | products.filter(
                 description__icontains=keyword
             )
 
