@@ -21,6 +21,7 @@ MYSQL_APP_USER_PASSWORD=＜appユーザーのパスワード＞
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_ENGINE=django.db.backends.mysql
+DJANGO_LOG_LEVEL=＜ログレベル＞
 ```
 
 # 開発手順
@@ -39,6 +40,7 @@ docker container run \
   -p 8081:8080 \
   -v $(pwd)/mysql/data:/var/lib/mysql \
   -v $(pwd)/src:/django/src \
+  -v $(pwd)/logs:/django/logs \
   django_mysql_image
 ```
 
