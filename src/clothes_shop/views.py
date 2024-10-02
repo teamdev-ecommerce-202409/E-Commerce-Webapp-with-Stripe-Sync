@@ -271,4 +271,4 @@ class CategoryListView(APIView):
             "brandCatgory": brand_serializer.data,
         }
 
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
