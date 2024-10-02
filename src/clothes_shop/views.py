@@ -60,10 +60,11 @@ class ProductListFilteredView(APIView):
         target_id = request.query_params.get("target")
         clothes_type_id = request.query_params.get("clothes_type")
         brand_id = request.query_params.get("brand")
-        # keyword = request.query_params.get('keyword')
+        keyword = request.query_params.get("keyword")
 
         # フィルタの作成
         filters = {"is_deleted": False, "release_date__lt": timezone.now()}
+
         if size_id:
             filters["size_id"] = size_id
         if target_id:
@@ -75,6 +76,13 @@ class ProductListFilteredView(APIView):
 
         # フィルタを適用してProductオブジェクトを取得
         products = Product.objects.filter(**filters)
+
+        # keywordのフィルタ追加
+        if keyword:
+            # 製品名か説明にキーワードが入ることを条件に追加
+            products = products.filter(title__icontains=keyword) | products.filter(
+                description__icontains=keyword
+            )
 
         # シリアライズしてレスポンスを返す
         serializer = ProductSerializer(products, many=True)
