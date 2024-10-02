@@ -33,7 +33,12 @@ DJANGO_LOG_LEVEL=＜ログレベル＞
 
 # Docker
 ```
-mkdir mysql/data
+mkdir -p $(pwd)/mysql/data
+mkdir -p $(pwd)/logs/debug
+mkdir -p $(pwd)/logs/info
+mkdir -p $(pwd)/logs/warning
+mkdir -p $(pwd)/logs/error
+mkdir -p $(pwd)/logs/critical
 docker build -t django_mysql_image .
 docker container run \
   --name django_mysql_container \
