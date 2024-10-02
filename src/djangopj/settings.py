@@ -76,14 +76,10 @@ LOGGING = {
             "format": "[{asctime}] {levelname} [{name}:{lineno}] {message}",
             "style": "{",
         },
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },
     },
     "filters": {},
     "handlers": {
-        "file": {
+        "debug_file": {
             "level": "DEBUG",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": "/django/logs/debug.log",
@@ -92,10 +88,46 @@ LOGGING = {
             "backupCount": 30,
             "formatter": "verbose",
         },
+        "info_file": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "/django/logs/info.log",
+            "when": "D",
+            "interval": 1,
+            "backupCount": 30,
+            "formatter": "verbose",
+        },
+        "warning_file": {
+            "level": "WARNING",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "/django/logs/warning.log",
+            "when": "D",
+            "interval": 1,
+            "backupCount": 30,
+            "formatter": "verbose",
+        },
+        "error_file": {
+            "level": "ERROR",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "/django/logs/error.log",
+            "when": "D",
+            "interval": 1,
+            "backupCount": 30,
+            "formatter": "verbose",
+        },
+        "critical_file": {
+            "level": "CRITICAL",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": "/django/logs/critical.log",
+            "when": "D",
+            "interval": 1,
+            "backupCount": 30,
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "": {
-            "handlers": ["file"],
+            "handlers": ["debug_file", "info_file", "warning_file", "error_file", "critical_file"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
         },
     },
