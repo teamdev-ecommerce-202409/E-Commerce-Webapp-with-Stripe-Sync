@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.test import TestCase
+from django.utils import timezone
 
 from clothes_shop.models import Brand, ClothesType, Product, Size, Target
 from clothes_shop.serializers import (
@@ -19,6 +20,9 @@ class ProductAndRelatedSerializerTest(TestCase):
         self.target = Target.objects.create(name="メンズ")
         self.cloth_type = ClothesType.objects.create(name="シャツ")
         self.brand = Brand.objects.create(name="NIKE")
+
+        # デフォルトのリリース日
+        self.one_week_ago = timezone.now() - timedelta(weeks=1)
         self.product = Product.objects.create(
             size=self.size,
             target=self.target,
@@ -28,7 +32,7 @@ class ProductAndRelatedSerializerTest(TestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=datetime.strptime("2018-12-05", "%Y-%m-%d"),
+            release_date=self.one_week_ago,
             stock_quantity=500,
             is_deleted=False,
         )
@@ -92,8 +96,12 @@ class ProductAndRelatedSerializerTest(TestCase):
         self.assertEqual(
             int(self.productSerializer.data["stock_quantity"]), self.product.stock_quantity
         )
+
+        # タイムゾーンを合わせてから比較
         serialized_date_str = self.productSerializer.data["release_date"].rstrip("Z")
-        expected_date_str = self.product.release_date.isoformat()
+        expected_date_str = self.product.release_date.astimezone(
+            timezone.get_current_timezone()
+        ).isoformat()
         self.assertEqual(serialized_date_str, expected_date_str)
         self.assertEqual(self.productSerializer.data["category"], self.product.category)
 
@@ -104,7 +112,7 @@ class ProductAndRelatedSerializerTest(TestCase):
             "description": "hello",
             "price": 100.02,
             "stock_quantity": 10,
-            "release_date": datetime.strptime("2018-12-05", "%Y-%m-%d"),
+            "release_date": self.one_week_ago,
             "size": self.size.id,
             "target": self.target.id,
             "clothes_type": self.cloth_type.id,
