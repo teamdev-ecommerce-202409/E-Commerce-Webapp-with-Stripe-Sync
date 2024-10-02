@@ -1,0 +1,110 @@
+[
+  {
+    "model": "clothes_shop.size",
+    "pk": 1,
+    "fields": {
+      "name": "S",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.size",
+    "pk": 2,
+    "fields": {
+      "name": "M",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.size",
+    "pk": 3,
+    "fields": {
+      "name": "L",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.target",
+    "pk": 1,
+    "fields": {
+      "name": "メンズ",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.target",
+    "pk": 2,
+    "fields": {
+      "name": "レディース",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.target",
+    "pk": 3,
+    "fields": {
+      "name": "キッズ",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.clothestype",
+    "pk": 1,
+    "fields": {
+      "name": "トップス",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.clothestype",
+    "pk": 2,
+    "fields": {
+      "name": "ズボン",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.clothestype",
+    "pk": 3,
+    "fields": {
+      "name": "スカート",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.brand",
+    "pk": 1,
+    "fields": {
+      "name": "NICE",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.brand",
+    "pk": 2,
+    "fields": {
+      "name": "UNIQ",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.brand",
+    "pk": 3,
+    "fields": {
+      "name": "KARUKAN",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  }
+]
