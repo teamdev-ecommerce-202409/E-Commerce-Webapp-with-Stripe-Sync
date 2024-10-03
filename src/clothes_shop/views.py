@@ -40,21 +40,8 @@ from .serializers import (
 
 class ProductListView(APIView):
     def get(self, request):
-        product = Product.objects.all()
-        serializer = ProductSerializer(product, many=True)
-        return Response(serializer.data)
+        # Home画面からフィルタした製品のリストを取得する
 
-    def post(self, request):
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ProductListFilteredView(APIView):
-    # Home画面からフィルタした製品のリストを取得する
-    def get(self, request):
         # クエリパラメータの取得
         size_id = request.query_params.get("size")
         target_id = request.query_params.get("target")
@@ -87,9 +74,11 @@ class ProductListFilteredView(APIView):
             # release_dateがパラメータにある→フィルタに設定
             # 文字列を日付に変換
             try:
+                # パラメーターをdatetimeに変更
                 release_date = timezone.datetime.fromisoformat(release_date_param)
                 filters["release_date__lt"] = release_date
             except ValueError:
+                # パラメーターをdatetimeに変更するのを失敗＝フォーマットが間違っている
                 return Response(
                     {
                         "error": "フォーマットエラー。ISO format (e.g., 2023-09-30T10:00:00)を使用してください"
@@ -119,6 +108,13 @@ class ProductListFilteredView(APIView):
         # シリアライズしてレスポンスを返す
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProductDetailView(APIView):

@@ -44,12 +44,13 @@ class ProductTests(APITestCase):
         self.list_url = reverse("clothes_shop:product-list")
         self.detail_url = reverse("clothes_shop:product-detail", kwargs={"pk": self.product_1.id})
 
-    def test_get_list(self):
-        response = self.client.get(self.list_url)
-        product = Product.objects.all()
-        serializer = ProductSerializer(product, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+    # フィルタリング機能のテストは煩雑になるため、別ファイルに切り出す
+    # def test_get_list(self):
+    #     response = self.client.get(self.list_url)
+    #     product = Product.objects.all()
+    #     serializer = ProductSerializer(product, many=True)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     self.assertEqual(response.data, serializer.data)
 
     def test_get_individual(self):
         response = self.client.get(self.detail_url)
