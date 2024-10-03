@@ -33,6 +33,9 @@ class ProductTests(APITestCase):
         # デフォルトのリリース日
         one_week_ago = timezone.now() - timedelta(weeks=1)
 
+        # 未来のリリース日
+        self.one_week_after = timezone.now() + timedelta(weeks=1)
+
         # 製品ver.0 ※論理削除
         self.product_0 = Product.objects.create(
             size=self.size_m,
@@ -59,7 +62,7 @@ class ProductTests(APITestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=timezone.now() + timedelta(days=1),
+            release_date=self.one_week_after,
             stock_quantity=500,
             is_deleted=False,
         )
@@ -166,21 +169,50 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-        self.filered_list_url = reverse("clothes_shop:product-list-filtered")
 
-    # 以下、ProductListFilteredViewのテスト
+        self.list_url = reverse("clothes_shop:product-list")
+
+    # 以下、ProductListViewのgetメソッドのテスト
     def test_get_filtered_list_no_filters(self):
         # フィルタなしでリクエスト
-        response = self.client.get(self.filered_list_url)
+        response = self.client.get(self.list_url)
         product = Product.objects.filter(is_deleted=False, release_date__lt=timezone.now())
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
+    def test_get_filtered_list_is_deleted(self):
+        # is_deletedがtrueのものを取得する
+        response = self.client.get(self.list_url, {"is_deleted": True})
+        product = Product.objects.filter(is_deleted=True)
+        serializer = ProductSerializer(product, many=True)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_filtered_list_release_date(self):
+        # release_dateが未来のものも入れて取得する
+        response = self.client.get(
+            self.list_url, {"release_date": (self.one_week_after).isoformat()}
+        )
+        product = Product.objects.filter(is_deleted=False, release_date__lt=self.one_week_after)
+        serializer = ProductSerializer(product, many=True)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_filtered_list_invalid_date(self):
+        # release_dateが不正の場合
+        response = self.client.get(self.list_url, {"release_date": "invalid_date"})
+        product = Product.objects.filter(is_deleted=False, release_date__lt=self.one_week_after)
+        serializer = ProductSerializer(product, many=True)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_get_filtered_list_by_size(self):
         # sizeフィルタでリクエスト サイズがxlのものを検索
-        response = self.client.get(self.filered_list_url, {"size": self.size_xl.id})
+        response = self.client.get(self.list_url, {"size": self.size_xl.id})
         product = Product.objects.filter(
             size=self.size_xl, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -191,7 +223,7 @@ class ProductTests(APITestCase):
 
     def test_get_filtered_list_by_target(self):
         # メンズフィルタでリクエスト
-        response = self.client.get(self.filered_list_url, {"target": self.target_mens.id})
+        response = self.client.get(self.list_url, {"target": self.target_mens.id})
         product = Product.objects.filter(
             target=self.target_mens, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -202,9 +234,7 @@ class ProductTests(APITestCase):
 
     def test_get_filtered_list_by_clothes_type(self):
         # ずぼんフィルタでリクエスト
-        response = self.client.get(
-            self.filered_list_url, {"clothes_type": self.cloth_type_pants.id}
-        )
+        response = self.client.get(self.list_url, {"clothes_type": self.cloth_type_pants.id})
         product = Product.objects.filter(
             clothes_type=self.cloth_type_pants, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -215,7 +245,7 @@ class ProductTests(APITestCase):
 
     def test_get_filtered_list_by_brand(self):
         # ブランドNIKEでリクエスト
-        response = self.client.get(self.filered_list_url, {"brand": self.brand_nike.id})
+        response = self.client.get(self.list_url, {"brand": self.brand_nike.id})
         product = Product.objects.filter(
             brand=self.brand_nike, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -227,7 +257,7 @@ class ProductTests(APITestCase):
     def test_get_filtered_list_by_combined_filters(self):
         # サイズM、ターゲットがメンズ、服の種類がシャツでフィルタ
         response = self.client.get(
-            self.filered_list_url,
+            self.list_url,
             {
                 "size": self.size_m.id,
                 "target": self.target_mens.id,
@@ -249,7 +279,7 @@ class ProductTests(APITestCase):
     def test_get_filtered_list_by_keyword_in_name_or_description(self):
         # キーワードがnameまたはdescriptionに含まれる製品のリストを取得
         response = self.client.get(
-            self.filered_list_url,
+            self.list_url,
             {"keyword": "キーワード"},
         )
         product = Product.objects.filter(
@@ -265,7 +295,7 @@ class ProductTests(APITestCase):
     def test_get_filtered_list_by_multiple_filters(self):
         # 複数フィルタでリクエスト　ブランドがアディダスでレディース
         response = self.client.get(
-            self.filered_list_url,
+            self.list_url,
             {
                 "target": self.target_womens.id,
                 "brand": self.brand_adidas.id,
