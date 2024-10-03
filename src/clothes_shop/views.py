@@ -63,7 +63,39 @@ class ProductListFilteredView(APIView):
         keyword = request.query_params.get("keyword")
 
         # フィルタの作成
-        filters = {"is_deleted": False, "release_date__lt": timezone.now()}
+        filters = {}
+
+        # is_deleted のパラメータ取得
+        is_deleted_param = request.query_params.get("is_deleted")
+
+        if is_deleted_param is None:
+            # is_deletedがパラメータにない→デフォルトでFalse
+            filters["is_deleted"] = False
+        else:
+            # is_deletedがパラメータにある→フィルタに設定
+            filters["is_deleted"] = (
+                is_deleted_param.lower() == "true"
+            )  # パラメータをいったん小文字にしてから比較することで表記ゆれを調整
+
+        # release_date のパラメータ取得
+        release_date_param = request.query_params.get("release_date")
+
+        if release_date_param is None:
+            # release_dateがパラメータにない→デフォルトで現在時刻
+            filters["release_date__lt"] = timezone.now()
+        else:
+            # release_dateがパラメータにある→フィルタに設定
+            # 文字列を日付に変換
+            try:
+                release_date = timezone.datetime.fromisoformat(release_date_param)
+                filters["release_date__lt"] = release_date
+            except ValueError:
+                return Response(
+                    {
+                        "error": "フォーマットエラー。ISO format (e.g., 2023-09-30T10:00:00)を使用してください"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         if size_id:
             filters["size_id"] = size_id
