@@ -1,6 +1,11 @@
 FROM ubuntu:24.04
 
 RUN mkdir /django
+RUN mkdir -p /django/logs/debug
+RUN mkdir -p /django/logs/info
+RUN mkdir -p /django/logs/warning
+RUN mkdir -p /django/logs/error
+RUN mkdir -p /django/logs/critical
 WORKDIR /django
 
 RUN apt update && apt upgrade -y

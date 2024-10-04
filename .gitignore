@@ -4,3 +4,4 @@ mysql/init/
 .env
 venv/
 mysql-variables.env
+logs/
