@@ -1,0 +1,281 @@
+[
+  {
+    "model": "clothes_shop.size",
+    "pk": 1,
+    "fields": {
+      "name": "S",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.size",
+    "pk": 2,
+    "fields": {
+      "name": "M",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.size",
+    "pk": 3,
+    "fields": {
+      "name": "L",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.target",
+    "pk": 1,
+    "fields": {
+      "name": "メンズ",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.target",
+    "pk": 2,
+    "fields": {
+      "name": "レディース",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.target",
+    "pk": 3,
+    "fields": {
+      "name": "キッズ",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.clothestype",
+    "pk": 1,
+    "fields": {
+      "name": "トップス",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.clothestype",
+    "pk": 2,
+    "fields": {
+      "name": "ズボン",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.clothestype",
+    "pk": 3,
+    "fields": {
+      "name": "スカート",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.brand",
+    "pk": 1,
+    "fields": {
+      "name": "NICE",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.brand",
+    "pk": 2,
+    "fields": {
+      "name": "UNIQ",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.brand",
+    "pk": 3,
+    "fields": {
+      "name": "KARUKAN",
+      "created_at": "2023-10-01T00:00:00Z",
+      "updated_at": "2023-10-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 1,
+    "fields": {
+      "size": 2,
+      "target": 1,
+      "clothes_type": 1,
+      "brand": 1,
+      "name": "論理削除された製品",
+      "description": "てすと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": true,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 2,
+    "fields": {
+      "size": 2,
+      "target": 1,
+      "clothes_type": 1,
+      "brand": 1,
+      "name": "future product",
+      "description": "testtest",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2026-10-10T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 3,
+    "fields": {
+      "size": 1,
+      "target": 1,
+      "clothes_type": 1,
+      "brand": 1,
+      "name": "サイズXL",
+      "description": "てすと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 4,
+    "fields": {
+      "size": 2,
+      "target": 2,
+      "clothes_type": 1,
+      "brand": 1,
+      "name": "レディース",
+      "description": "てすと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 5,
+    "fields": {
+      "size": 2,
+      "target": 1,
+      "clothes_type": 2,
+      "brand": 1,
+      "name": "服の種類がパンツ",
+      "description": "てすと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 6,
+    "fields": {
+      "size": 2,
+      "target": 1,
+      "clothes_type": 1,
+      "brand": 2,
+      "name": "アディダス",
+      "description": "てすと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 7,
+    "fields": {
+      "size": 2,
+      "target": 1,
+      "clothes_type": 1,
+      "brand": 2,
+      "name": "テスト用につくったキーワード服１",
+      "description": "てすと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 8,
+    "fields": {
+      "size": 2,
+      "target": 1,
+      "clothes_type": 1,
+      "brand": 2,
+      "name": "商品説明にkeyword",
+      "description": "てすキーワードと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  },
+  {
+    "model": "clothes_shop.product",
+    "pk": 9,
+    "fields": {
+      "size": 2,
+      "target": 2,
+      "clothes_type": 1,
+      "brand": 2,
+      "name": "ブランドがアディダスでレディース",
+      "description": "てすと",
+      "category": "服",
+      "price": "100.00",
+      "release_date": "2023-09-20T00:00:00Z",
+      "stock_quantity": 500,
+      "is_deleted": false,
+      "created_at": "2023-09-20T00:00:00Z",
+      "updated_at": "2023-09-20T00:00:00Z"
+    }
+  }
+]
