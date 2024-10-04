@@ -3,7 +3,7 @@ services:
     image: mysql:8.0
     volumes:
       - ./mysql/data/:/var/lib/mysql
-      # - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     env_file:
       - ./mysql-variables.env
     command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
