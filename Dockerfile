@@ -6,6 +6,11 @@ RUN apt install -y tzdata
 RUN apt install -y --no-install-recommends mysql-server
 
 RUN mkdir /django
+RUN mkdir -p /django/logs/debug
+RUN mkdir -p /django/logs/info
+RUN mkdir -p /django/logs/warning
+RUN mkdir -p /django/logs/error
+RUN mkdir -p /django/logs/critical
 WORKDIR /django
 
 RUN apt install -y python3.12 python3-pip python3-venv

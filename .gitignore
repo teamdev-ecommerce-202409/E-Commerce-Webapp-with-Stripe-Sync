@@ -3,3 +3,4 @@ mysql/init/
 **/__pycache__/**
 .env
 venv/
+logs/
