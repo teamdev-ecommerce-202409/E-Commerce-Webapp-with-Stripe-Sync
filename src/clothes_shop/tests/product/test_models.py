@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
+from django.utils import timezone
 
 from clothes_shop.models import Brand, ClothesType, Product, Size, Target
 
@@ -21,7 +22,7 @@ class ProductModelTest(TestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=datetime.strptime("2018-12-05", "%Y-%m-%d"),
+            release_date=timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
             stock_quantity=500,
             is_deleted=False,
         )
@@ -35,7 +36,10 @@ class ProductModelTest(TestCase):
         self.assertEqual(self.product.description, "てすと")
         self.assertEqual(self.product.category, "服")
         self.assertEqual(self.product.price, 100)
-        self.assertEqual(self.product.release_date, datetime.strptime("2018-12-05", "%Y-%m-%d"))
+        self.assertEqual(
+            self.product.release_date,
+            timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
+        )
         self.assertEqual(self.product.stock_quantity, 500)
         self.assertEqual(self.product.is_deleted, False)
 
