@@ -40,51 +40,16 @@ from .serializers import (
 
 class ProductListView(APIView):
     def get(self, request):
-        # Home画面からフィルタした製品のリストを取得する
 
-        # クエリパラメータの取得
         size_id = request.query_params.get("size")
         target_id = request.query_params.get("target")
         clothes_type_id = request.query_params.get("clothes_type")
         brand_id = request.query_params.get("brand")
         keyword = request.query_params.get("keyword")
-
-        # フィルタの作成
-        filters = {}
-
-        # is_deleted のパラメータ取得
         is_deleted_param = request.query_params.get("is_deleted")
-
-        if is_deleted_param is None:
-            # is_deletedがパラメータにない→デフォルトでFalse
-            filters["is_deleted"] = False
-        else:
-            # is_deletedがパラメータにある→フィルタに設定
-            filters["is_deleted"] = (
-                is_deleted_param.lower() == "true"
-            )  # パラメータをいったん小文字にしてから比較することで表記ゆれを調整
-
-        # release_date のパラメータ取得
         release_date_param = request.query_params.get("release_date")
 
-        if release_date_param is None:
-            # release_dateがパラメータにない→デフォルトで現在時刻
-            filters["release_date__lt"] = timezone.now()
-        else:
-            # release_dateがパラメータにある→フィルタに設定
-            # 文字列を日付に変換
-            try:
-                # パラメーターをdatetimeに変更
-                release_date = timezone.datetime.fromisoformat(release_date_param)
-                filters["release_date__lt"] = release_date
-            except ValueError:
-                # パラメーターをdatetimeに変更するのを失敗＝フォーマットが間違っている
-                return Response(
-                    {
-                        "error": "フォーマットエラー。ISO format (e.g., 2023-09-30T10:00:00)を使用してください"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        filters = {}
 
         if size_id:
             filters["size_id"] = size_id
@@ -95,18 +60,34 @@ class ProductListView(APIView):
         if brand_id:
             filters["brand_id"] = brand_id
 
-        # フィルタを適用してProductオブジェクトを取得
+        if is_deleted_param is None:
+            filters["is_deleted"] = False
+        else:
+            filters["is_deleted"] = is_deleted_param.lower() == "true"
+
+        if release_date_param is None:
+            filters["release_date__lt"] = timezone.now()
+        else:
+            try:
+                release_date = timezone.datetime.fromisoformat(release_date_param)
+                filters["release_date__lt"] = release_date
+            except ValueError:
+                return Response(
+                    {
+                        "error": "フォーマットエラー。ISO format (e.g., 2023-09-30T10:00:00)を使用してください"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         products = Product.objects.filter(**filters)
 
-        # keywordのフィルタ追加
         if keyword:
-            # 製品名か説明にキーワードが入ることを条件に追加
             products = products.filter(name__icontains=keyword) | products.filter(
                 description__icontains=keyword
             )
 
-        # シリアライズしてレスポンスを返す
         serializer = ProductSerializer(products, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
