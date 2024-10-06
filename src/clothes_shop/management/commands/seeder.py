@@ -2,6 +2,7 @@ import datetime
 import random
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from faker import Faker
 
 from clothes_shop.models import Brand, ClothesType, Product, Size, Target
@@ -47,7 +48,7 @@ class Command(BaseCommand):
                 description=fake.sentence(),
                 category=random.choice(category_list),
                 price=random.randint(1, 10000),
-                release_date=datetime.datetime.strptime("2018-12-05", "%Y-%m-%d"),
+                release_date=timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
                 stock_quantity=random.randint(0, 100),
             )
 
