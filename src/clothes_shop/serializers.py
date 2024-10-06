@@ -47,6 +47,11 @@ class BrandSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    size = serializers.PrimaryKeyRelatedField(queryset=Size.objects.all())
+    target = serializers.PrimaryKeyRelatedField(queryset=Target.objects.all())
+    clothes_type = serializers.PrimaryKeyRelatedField(queryset=ClothesType.objects.all())
+    brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all())
+
     class Meta:
         model = Product
         fields = (
