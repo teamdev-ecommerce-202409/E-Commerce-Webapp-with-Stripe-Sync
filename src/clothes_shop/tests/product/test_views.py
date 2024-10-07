@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -24,7 +25,7 @@ class ProductTests(APITestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=datetime.strptime("2018-12-05", "%Y-%m-%d"),
+            release_date=timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
             stock_quantity=500,
             is_deleted=False,
         )
@@ -37,7 +38,7 @@ class ProductTests(APITestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=datetime.strptime("2018-12-05", "%Y-%m-%d"),
+            release_date=timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
             stock_quantity=500,
             is_deleted=False,
         )
@@ -65,7 +66,7 @@ class ProductTests(APITestCase):
             "description": "hello",
             "price": 100.02,
             "stock_quantity": 10,
-            "release_date": datetime.strptime("2018-12-05", "%Y-%m-%d"),
+            "release_date": timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
             "size": self.size.id,
             "target": self.target.id,
             "clothes_type": self.cloth_type.id,
@@ -80,7 +81,7 @@ class ProductTests(APITestCase):
         self.assertEqual(product_created.description, "hello")
         self.assertEqual(float(product_created.price), 100.02)
         self.assertEqual(product_created.stock_quantity, 10)
-        # self.assertEqual(product_created.release_date, datetime.strptime("2018-12-05", "%Y-%m-%d"))
+        # self.assertEqual(product_created.release_date, timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")))
         self.assertEqual(product_created.size.name, "XL")
         self.assertEqual(product_created.target.name, "メンズ")
         self.assertEqual(product_created.clothes_type.name, "シャツ")
