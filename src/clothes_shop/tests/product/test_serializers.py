@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.test import TestCase
 from django.utils import timezone
@@ -20,6 +20,9 @@ class ProductAndRelatedSerializerTest(TestCase):
         self.target = Target.objects.create(name="メンズ")
         self.cloth_type = ClothesType.objects.create(name="シャツ")
         self.brand = Brand.objects.create(name="NIKE")
+
+        # デフォルトのリリース日
+        self.one_week_ago = timezone.now() - timedelta(weeks=1)
         self.product = Product.objects.create(
             size=self.size,
             target=self.target,
@@ -93,8 +96,12 @@ class ProductAndRelatedSerializerTest(TestCase):
         self.assertEqual(
             int(self.productSerializer.data["stock_quantity"]), self.product.stock_quantity
         )
+
+        # タイムゾーンを合わせてから比較
         serialized_date_str = self.productSerializer.data["release_date"].rstrip("Z")
-        expected_date_str = self.product.release_date.isoformat()
+        expected_date_str = self.product.release_date.astimezone(
+            timezone.get_current_timezone()
+        ).isoformat()
         self.assertEqual(serialized_date_str, expected_date_str)
         self.assertEqual(self.productSerializer.data["category"], self.product.category)
 
