@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -39,9 +40,55 @@ from .serializers import (
 
 class ProductListView(APIView):
     def get(self, request):
-        product = Product.objects.all()
-        serializer = ProductSerializer(product, many=True)
-        return Response(serializer.data)
+
+        size_id = request.query_params.get("size")
+        target_id = request.query_params.get("target")
+        clothes_type_id = request.query_params.get("clothes_type")
+        brand_id = request.query_params.get("brand")
+        keyword = request.query_params.get("keyword")
+        is_deleted_param = request.query_params.get("is_deleted")
+        release_date_param = request.query_params.get("release_date")
+
+        filters = {}
+
+        if size_id:
+            filters["size_id"] = size_id
+        if target_id:
+            filters["target_id"] = target_id
+        if clothes_type_id:
+            filters["clothes_type_id"] = clothes_type_id
+        if brand_id:
+            filters["brand_id"] = brand_id
+
+        if is_deleted_param is None:
+            filters["is_deleted"] = False
+        else:
+            filters["is_deleted"] = is_deleted_param.lower() == "true"
+
+        if release_date_param is None:
+            filters["release_date__lt"] = timezone.now()
+        else:
+            try:
+                release_date = timezone.datetime.fromisoformat(release_date_param)
+                filters["release_date__lt"] = release_date
+            except ValueError:
+                return Response(
+                    {
+                        "error": "フォーマットエラー。ISO format (e.g., 2023-09-30T10:00:00)を使用してください"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        products = Product.objects.filter(**filters)
+
+        if keyword:
+            products = products.filter(name__icontains=keyword) | products.filter(
+                description__icontains=keyword
+            )
+
+        serializer = ProductSerializer(products, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = ProductSerializer(data=request.data)
