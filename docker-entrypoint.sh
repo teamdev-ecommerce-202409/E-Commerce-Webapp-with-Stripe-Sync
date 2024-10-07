@@ -1,22 +1,6 @@
 #!/bin/bash
-if [ ! -d "/var/lib/mysql/mysql" ]; then
-    echo "Initializing MySQL data directory..."
-    mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
-fi
 
-mysqld &
-
-until mysqladmin ping --silent; do
-    echo 'Waiting for mysqld to be ready...'
-    sleep 1
-done
-
-if /django/venv/bin/python3 manage.py createdb; then
-    echo "Database created successfully."
-else
-    echo "Failed to create database." >&2
-    exit 1
-fi
+/django/wait-for-it.sh db:3306 -t 0
 
 if /django/venv/bin/python3 manage.py migrate; then
     echo "Migration done successfully."

@@ -32,7 +32,7 @@ class ProductAndRelatedSerializerTest(TestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=self.one_week_ago,
+            release_date=timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
             stock_quantity=500,
             is_deleted=False,
         )
@@ -112,7 +112,7 @@ class ProductAndRelatedSerializerTest(TestCase):
             "description": "hello",
             "price": 100.02,
             "stock_quantity": 10,
-            "release_date": self.one_week_ago,
+            "release_date": timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
             "size": self.size.id,
             "target": self.target.id,
             "clothes_type": self.cloth_type.id,
