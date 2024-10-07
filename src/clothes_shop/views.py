@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -94,8 +95,29 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class RatingListCreateView(generics.ListCreateAPIView):
-    queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+
+    def get_queryset(self):
+        product_id = self.request.query_params.get("productId")
+
+        if product_id:
+            return Rating.objects.filter(product_id=product_id)
+
+        return Rating.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        avg_rating = queryset.aggregate(average=Avg("rating"))["average"]
+
+        if avg_rating is None:
+            avg_rating = 0
+
+        serializer = self.get_serializer(queryset.order_by("-created_at"), many=True)
+
+        response_data = {"average_rating": avg_rating, "comments": serializer.data}
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class RatingDetailView(generics.RetrieveUpdateDestroyAPIView):
