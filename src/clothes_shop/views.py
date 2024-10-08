@@ -42,24 +42,24 @@ from .serializers import (
 class ProductListView(APIView):
     def get(self, request):
 
-        size_id = request.query_params.get("size")
-        target_id = request.query_params.get("target")
-        clothes_type_id = request.query_params.get("clothes_type")
-        brand_id = request.query_params.get("brand")
+        size_ids = request.query_params.getlist("size[]")
+        target_ids = request.query_params.getlist("target[]")
+        clothes_type_ids = request.query_params.getlist("clothes_type[]")
+        brand_ids = request.query_params.getlist("brand[]")
         keyword = request.query_params.get("keyword")
         is_deleted_param = request.query_params.get("is_deleted")
         release_date_param = request.query_params.get("release_date")
 
         filters = {}
 
-        if size_id:
-            filters["size_id"] = size_id
-        if target_id:
-            filters["target_id"] = target_id
-        if clothes_type_id:
-            filters["clothes_type_id"] = clothes_type_id
-        if brand_id:
-            filters["brand_id"] = brand_id
+        if size_ids:
+            filters["size_id__in"] = size_ids
+        if target_ids:
+            filters["target_id__in"] = target_ids
+        if clothes_type_ids:
+            filters["clothes_type_id__in"] = clothes_type_ids
+        if brand_ids:
+            filters["brand_id__in"] = brand_ids
 
         if is_deleted_param is None:
             filters["is_deleted"] = False
