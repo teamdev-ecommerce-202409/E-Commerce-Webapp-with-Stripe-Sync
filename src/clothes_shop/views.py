@@ -42,7 +42,6 @@ from .serializers import (
 
 class ProductListView(APIView):
     def get(self, request):
-
         size_ids = request.query_params.getlist("size[]")
         target_ids = request.query_params.getlist("target[]")
         clothes_type_ids = request.query_params.getlist("clothes_type[]")
@@ -52,7 +51,6 @@ class ProductListView(APIView):
         release_date_param = request.query_params.get("release_date")
 
         filters = {}
-
         if size_ids:
             filters["size_id__in"] = size_ids
         if target_ids:
