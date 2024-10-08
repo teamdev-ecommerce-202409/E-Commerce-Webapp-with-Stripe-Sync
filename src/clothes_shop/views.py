@@ -41,7 +41,6 @@ from .serializers import (
 
 class ProductListView(APIView):
     def get(self, request):
-
         size_id = request.query_params.get("size")
         target_id = request.query_params.get("target")
         clothes_type_id = request.query_params.get("clothes_type")
@@ -51,7 +50,6 @@ class ProductListView(APIView):
         release_date_param = request.query_params.get("release_date")
 
         filters = {}
-
         if size_id:
             filters["size_id"] = size_id
         if target_id:
@@ -81,14 +79,11 @@ class ProductListView(APIView):
                 )
 
         products = Product.objects.filter(**filters)
-
         if keyword:
             products = products.filter(name__icontains=keyword) | products.filter(
                 description__icontains=keyword
             )
-
         serializer = ProductSerializer(products, many=True)
-
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
