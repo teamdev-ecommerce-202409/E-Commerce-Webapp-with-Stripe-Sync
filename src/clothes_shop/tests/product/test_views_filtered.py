@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.db.models import Q
 from django.urls import reverse
@@ -11,25 +11,17 @@ from clothes_shop.serializers import ProductSerializer
 
 
 class ProductTests(APITestCase):
-
     def setUp(self):
-
         self.size_m = Size.objects.create(name="M")
         self.size_xl = Size.objects.create(name="XL")
-
         self.target_mens = Target.objects.create(name="メンズ")
         self.target_womens = Target.objects.create(name="レディース")
-
         self.cloth_type_shirt = ClothesType.objects.create(name="シャツ")
         self.cloth_type_pants = ClothesType.objects.create(name="パンツ")
-
         self.brand_nike = Brand.objects.create(name="NIKE")
         self.brand_adidas = Brand.objects.create(name="ADIDAS")
-
         one_week_ago = timezone.now() - timedelta(weeks=1)
-
         self.one_week_after = timezone.now() + timedelta(weeks=1)
-
         self.product_0 = Product.objects.create(
             size=self.size_m,
             target=self.target_mens,
@@ -43,7 +35,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=True,
         )
-
         self.product_1 = Product.objects.create(
             size=self.size_m,
             target=self.target_mens,
@@ -57,7 +48,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.product_2 = Product.objects.create(
             size=self.size_xl,
             target=self.target_mens,
@@ -71,7 +61,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.product_3 = Product.objects.create(
             size=self.size_m,
             target=self.target_womens,
@@ -85,7 +74,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.product_4 = Product.objects.create(
             size=self.size_m,
             target=self.target_mens,
@@ -99,7 +87,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.product_5 = Product.objects.create(
             size=self.size_m,
             target=self.target_mens,
@@ -113,7 +100,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.product_6 = Product.objects.create(
             size=self.size_m,
             target=self.target_mens,
@@ -127,7 +113,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.product_7 = Product.objects.create(
             size=self.size_m,
             target=self.target_mens,
@@ -141,7 +126,6 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.product_8 = Product.objects.create(
             size=self.size_m,
             target=self.target_womens,
@@ -155,14 +139,12 @@ class ProductTests(APITestCase):
             stock_quantity=500,
             is_deleted=False,
         )
-
         self.list_url = reverse("clothes_shop:product-list")
 
     def test_get_filtered_list_no_filters(self):
         response = self.client.get(self.list_url)
         product = Product.objects.filter(is_deleted=False, release_date__lt=timezone.now())
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -170,7 +152,6 @@ class ProductTests(APITestCase):
         response = self.client.get(self.list_url, {"is_deleted": True})
         product = Product.objects.filter(is_deleted=True)
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -180,7 +161,6 @@ class ProductTests(APITestCase):
         )
         product = Product.objects.filter(is_deleted=False, release_date__lt=self.one_week_after)
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -188,7 +168,6 @@ class ProductTests(APITestCase):
         response = self.client.get(self.list_url, {"release_date": "invalid_date"})
         product = Product.objects.filter(is_deleted=False, release_date__lt=self.one_week_after)
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_filtered_list_by_size(self):
@@ -197,7 +176,6 @@ class ProductTests(APITestCase):
             size=self.size_xl, is_deleted=False, release_date__lt=timezone.now()
         )
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -207,7 +185,6 @@ class ProductTests(APITestCase):
             target=self.target_mens, is_deleted=False, release_date__lt=timezone.now()
         )
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -217,7 +194,6 @@ class ProductTests(APITestCase):
             clothes_type=self.cloth_type_pants, is_deleted=False, release_date__lt=timezone.now()
         )
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -227,7 +203,6 @@ class ProductTests(APITestCase):
             brand=self.brand_nike, is_deleted=False, release_date__lt=timezone.now()
         )
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -248,7 +223,6 @@ class ProductTests(APITestCase):
             release_date__lt=timezone.now(),
         )
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -263,7 +237,6 @@ class ProductTests(APITestCase):
             release_date__lt=timezone.now(),
         )
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
@@ -282,6 +255,5 @@ class ProductTests(APITestCase):
             release_date__lt=timezone.now(),
         )
         serializer = ProductSerializer(product, many=True)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)

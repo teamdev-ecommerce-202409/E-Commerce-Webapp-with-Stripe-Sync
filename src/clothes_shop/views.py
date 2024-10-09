@@ -4,6 +4,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -102,35 +103,35 @@ class ProductListView(APIView):
 
 
 class ProductDetailView(APIView):
-    def get_object(self, pk):
+    def get_product(self, pk):
         try:
             product = Product.objects.get(pk=pk)
             return product
         except Product.DoesNotExist:
-            errMsg = "指定されたIDに紐づく製品が存在しません。"
+            errMsg = f"指定されたID {pk} に紐づく製品が存在しません。"
             logger.error(errMsg)
-            raise Response(status=status.HTTP_404_NOT_FOUND)
-        except Exception:
-            errMsg = "想定外のエラーが発生しました。サーバー管理者にお問い合わせください。"
+            raise NotFound(detail=errMsg)
+        except Exception as e:
+            errMsg = f"想定外のエラーが発生しました: {str(e)}"
             logger.error(errMsg)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise APIException(detail=errMsg)
 
     def get(self, request, *args, **kwargs):
-        product = self.get_object(kwargs.get("pk"))
-        serializer = ProductSerializer(product, many=False)
+        product = self.get_product(kwargs.get("pk"))
+        serializer = ProductSerializer(product)
         return Response(serializer.data)
 
     def put(self, request, *args, **kwargs):
-        product = self.get_object(kwargs.get("pk"))
+        product = self.get_product(kwargs.get("pk"))
         serializer = ProductSerializer(product, data=request.data, partial=True)
-        if serializer.is_valid() is False:
+        if not serializer.is_valid():
             logger.error(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
-        product = self.get_object(kwargs.get("pk"))
+        product = self.get_product(kwargs.get("pk"))
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
