@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from clothes_shop.models import Brand, ClothesType, Product, Size, Target
-from clothes_shop.serializers import ProductSerializer
 
 logger = logging.getLogger(__name__)
 
