@@ -20,8 +20,6 @@ class ProductAndRelatedSerializerTest(TestCase):
         self.target = Target.objects.create(name="メンズ")
         self.cloth_type = ClothesType.objects.create(name="シャツ")
         self.brand = Brand.objects.create(name="NIKE")
-
-        # デフォルトのリリース日
         self.one_week_ago = timezone.now() - timedelta(weeks=1)
         self.product = Product.objects.create(
             size=self.size,
@@ -84,20 +82,18 @@ class ProductAndRelatedSerializerTest(TestCase):
 
     def test_product_serializer_field_content(self):
         """シリアライザが正しい内容をシリアライズできるかテスト"""
-        self.assertEqual(self.productSerializer.data["size"], self.sizeSerializer.data["id"])
-        self.assertEqual(self.productSerializer.data["target"], self.targetSerializer.data["id"])
+        self.assertEqual(self.productSerializer.data["size"], self.sizeSerializer.data["name"])
+        self.assertEqual(self.productSerializer.data["target"], self.targetSerializer.data["name"])
         self.assertEqual(
-            self.productSerializer.data["clothes_type"], self.clothesTypeSerializer.data["id"]
+            self.productSerializer.data["clothes_type"], self.clothesTypeSerializer.data["name"]
         )
-        self.assertEqual(self.productSerializer.data["brand"], self.brandSerializer.data["id"])
+        self.assertEqual(self.productSerializer.data["brand"], self.brandSerializer.data["name"])
         self.assertEqual(self.productSerializer.data["name"], self.product.name)
         self.assertEqual(self.productSerializer.data["description"], self.product.description)
         self.assertEqual(float(self.productSerializer.data["price"]), self.product.price)
         self.assertEqual(
             int(self.productSerializer.data["stock_quantity"]), self.product.stock_quantity
         )
-
-        # タイムゾーンを合わせてから比較
         serialized_date_str = self.productSerializer.data["release_date"].rstrip("Z")
         expected_date_str = self.product.release_date.astimezone(
             timezone.get_current_timezone()
@@ -113,10 +109,10 @@ class ProductAndRelatedSerializerTest(TestCase):
             "price": 100.02,
             "stock_quantity": 10,
             "release_date": timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
-            "size": self.size.id,
-            "target": self.target.id,
-            "clothes_type": self.cloth_type.id,
-            "brand": self.brand.id,
+            "size": self.size.name,
+            "target": self.target.name,
+            "clothes_type": self.cloth_type.name,
+            "brand": self.brand.name,
             "category": "服",
         }
         productSerializerValid = ProductSerializer(data=valid_data)
@@ -127,10 +123,10 @@ class ProductAndRelatedSerializerTest(TestCase):
         self.assertEqual(float(product.price), float(valid_data["price"]))
         self.assertEqual(product.stock_quantity, int(valid_data["stock_quantity"]))
         # self.assertEqual(product.release_date, valid_data["release_date"])
-        self.assertEqual(product.size.id, valid_data["size"])
-        self.assertEqual(product.target.id, valid_data["target"])
-        self.assertEqual(product.clothes_type.id, valid_data["clothes_type"])
-        self.assertEqual(product.brand.id, valid_data["brand"])
+        self.assertEqual(product.size.name, valid_data["size"])
+        self.assertEqual(product.target.name, valid_data["target"])
+        self.assertEqual(product.clothes_type.name, valid_data["clothes_type"])
+        self.assertEqual(product.brand.name, valid_data["brand"])
         self.assertEqual(product.category, valid_data["category"])
 
     def test_product_serializer_invalid_data(self):
