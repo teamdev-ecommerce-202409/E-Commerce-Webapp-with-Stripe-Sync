@@ -1,7 +1,8 @@
 FROM ubuntu:24.04
 
 # 必要なパッケージをインストール
-RUN apt-get update && apt-get install -y python3.12 python3-pip python3-venv nginx mysql-client
+# RUN apt-get update && apt-get install -y python3.12 python3-pip python3-venv nginx mysql-client
+RUN apt-get update && apt-get install -y python3.12 python3-pip python3-venv nginx mysql-client pkg-config libmysqlclient-dev
 
 # アプリケーションのセットアップ
 RUN mkdir /django
