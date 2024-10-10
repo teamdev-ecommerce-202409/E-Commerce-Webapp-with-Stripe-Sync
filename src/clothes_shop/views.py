@@ -2,6 +2,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -87,9 +88,13 @@ class ProductListView(APIView):
                 description__icontains=keyword
             )
 
-        serializer = ProductSerializer(products, many=True)
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        paginated_products = paginator.paginate_queryset(products, request)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = ProductSerializer(paginated_products, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = ProductSerializer(data=request.data)
