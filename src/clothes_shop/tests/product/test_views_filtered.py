@@ -164,7 +164,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_is_deleted(self):
         response = self.client.get(self.list_url, {"is_deleted": True})
@@ -172,7 +172,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_release_date(self):
         response = self.client.get(
@@ -182,7 +182,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_invalid_date(self):
         response = self.client.get(self.list_url, {"release_date": "invalid_date"})
@@ -199,7 +199,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_target(self):
         response = self.client.get(self.list_url, {"target": self.target_mens.id})
@@ -209,7 +209,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_clothes_type(self):
         response = self.client.get(self.list_url, {"clothes_type": self.cloth_type_pants.id})
@@ -219,7 +219,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_brand(self):
         response = self.client.get(self.list_url, {"brand": self.brand_nike.id})
@@ -229,7 +229,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_combined_filters(self):
         response = self.client.get(
@@ -250,7 +250,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_keyword_in_name_or_description(self):
         response = self.client.get(
@@ -265,7 +265,7 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_multiple_filters(self):
         response = self.client.get(
@@ -284,4 +284,4 @@ class ProductTests(APITestCase):
         serializer = ProductSerializer(product, many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data["results"], serializer.data)
