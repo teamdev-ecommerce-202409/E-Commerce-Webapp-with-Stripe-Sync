@@ -1,28 +1,26 @@
 FROM ubuntu:24.04
 
+# 必要なパッケージをインストール
+RUN apt-get update && apt-get install -y python3.12 python3-pip python3-venv nginx mysql-client
+
+# アプリケーションのセットアップ
 RUN mkdir /django
-RUN mkdir -p /django/logs/debug
-RUN mkdir -p /django/logs/info
-RUN mkdir -p /django/logs/warning
-RUN mkdir -p /django/logs/error
-RUN mkdir -p /django/logs/critical
 WORKDIR /django
-
-RUN apt update && apt upgrade -y
-RUN apt install -y python3.12 python3-pip python3-venv
-RUN apt install -y pkg-config
-RUN apt install -y libmysqlclient-dev
-
-COPY requirements.txt /django
-COPY .env /django
+COPY requirements.txt ./
+COPY .env ./
 COPY docker-entrypoint.sh /django
-COPY wait-for-it.sh /django
 
+# Python環境の設定
 RUN python3 -m venv venv
 RUN venv/bin/pip install --upgrade pip
 RUN venv/bin/pip install -r requirements.txt
 
-WORKDIR /django/src
-RUN chmod +x /django/docker-entrypoint.sh
-RUN chmod +x /django/wait-for-it.sh
+# Nginxの設定ファイルをコピー
+COPY nginx.conf /etc/nginx/nginx.conf
+RUN rm /etc/nginx/sites-enabled/default  # デフォルト設定を無効化
+
+# ポートの公開
+EXPOSE 80 8080
+
+# エントリーポイントスクリプトの実行
 ENTRYPOINT ["/django/docker-entrypoint.sh"]
