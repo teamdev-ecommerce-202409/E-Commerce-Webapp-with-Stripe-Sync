@@ -47,12 +47,10 @@ class BrandSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    size = serializers.SlugRelatedField(queryset=Size.objects.all(), slug_field="name")
-    target = serializers.SlugRelatedField(queryset=Target.objects.all(), slug_field="name")
-    clothes_type = serializers.SlugRelatedField(
-        queryset=ClothesType.objects.all(), slug_field="name"
-    )
-    brand = serializers.SlugRelatedField(queryset=Brand.objects.all(), slug_field="name")
+    size = SizeSerializer()
+    target = TargetSerializer()
+    clothes_type = ClothesTypeSerializer()
+    brand = BrandSerializer()
 
     class Meta:
         model = Product
