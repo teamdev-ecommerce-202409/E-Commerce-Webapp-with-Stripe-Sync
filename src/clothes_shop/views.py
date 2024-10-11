@@ -81,7 +81,7 @@ class ProductListView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        products = Product.objects.filter(**filters)
+        products = Product.objects.filter(**filters).order_by("-release_date")
 
         if keyword:
             products = products.filter(name__icontains=keyword) | products.filter(
