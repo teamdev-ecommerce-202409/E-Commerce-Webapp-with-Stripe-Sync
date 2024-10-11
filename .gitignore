@@ -2,6 +2,9 @@ mysql/data/
 mysql/init/
 **/__pycache__/**
 .env
+.env.dev
+.env.staging
+.env.prod
 venv/
 mysql-variables.env
 logs/
