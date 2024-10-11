@@ -192,7 +192,7 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_filtered_list_by_size(self):
-        response = self.client.get(self.list_url, {"size": self.size_xl.id})
+        response = self.client.get(self.list_url, {"size[]": [self.size_xl.id]})
         product = Product.objects.filter(
             size=self.size_xl, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -202,7 +202,7 @@ class ProductTests(APITestCase):
         self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_target(self):
-        response = self.client.get(self.list_url, {"target": self.target_mens.id})
+        response = self.client.get(self.list_url, {"target[]": [self.target_mens.id]})
         product = Product.objects.filter(
             target=self.target_mens, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -212,7 +212,7 @@ class ProductTests(APITestCase):
         self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_clothes_type(self):
-        response = self.client.get(self.list_url, {"clothes_type": self.cloth_type_pants.id})
+        response = self.client.get(self.list_url, {"clothes_type[]": [self.cloth_type_pants.id]})
         product = Product.objects.filter(
             clothes_type=self.cloth_type_pants, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -222,7 +222,7 @@ class ProductTests(APITestCase):
         self.assertEqual(response.data["results"], serializer.data)
 
     def test_get_filtered_list_by_brand(self):
-        response = self.client.get(self.list_url, {"brand": self.brand_nike.id})
+        response = self.client.get(self.list_url, {"brand[]": [self.brand_nike.id]})
         product = Product.objects.filter(
             brand=self.brand_nike, is_deleted=False, release_date__lt=timezone.now()
         )
@@ -235,9 +235,9 @@ class ProductTests(APITestCase):
         response = self.client.get(
             self.list_url,
             {
-                "size": self.size_m.id,
-                "target": self.target_mens.id,
-                "clothes_type": self.cloth_type_shirt.id,
+                "size[]": [self.size_m.id],
+                "target[]": [self.target_mens.id],
+                "clothes_type[]": [self.cloth_type_shirt.id],
             },
         )
         product = Product.objects.filter(
@@ -271,8 +271,8 @@ class ProductTests(APITestCase):
         response = self.client.get(
             self.list_url,
             {
-                "target": self.target_womens.id,
-                "brand": self.brand_adidas.id,
+                "target[]": [self.target_womens.id],
+                "brand[]": [self.brand_adidas.id],
             },
         )
         product = Product.objects.filter(
