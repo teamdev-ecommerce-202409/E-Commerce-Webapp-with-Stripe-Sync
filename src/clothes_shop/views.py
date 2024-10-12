@@ -1,7 +1,10 @@
+import logging
+
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -39,10 +42,11 @@ from .serializers import (
     WishListSerializer,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class ProductListView(APIView):
     def get(self, request):
-
         size_ids = request.query_params.getlist("size[]")
         target_ids = request.query_params.getlist("target[]")
         clothes_type_ids = request.query_params.getlist("clothes_type[]")
@@ -52,7 +56,6 @@ class ProductListView(APIView):
         release_date_param = request.query_params.get("release_date")
 
         filters = {}
-
         if size_ids:
             filters["size_id__in"] = size_ids
         if target_ids:
@@ -74,10 +77,12 @@ class ProductListView(APIView):
                 release_date = timezone.datetime.fromisoformat(release_date_param)
                 filters["release_date__lt"] = release_date
             except ValueError:
+                errMsg = (
+                    "フォーマットエラー。ISO format (e.g., 2023-09-30T10:00:00)を使用してください。"
+                )
+                logger.error(errMsg)
                 return Response(
-                    {
-                        "error": "フォーマットエラー。ISO format (e.g., 2023-09-30T10:00:00)を使用してください"
-                    },
+                    {"message": errMsg},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -98,37 +103,43 @@ class ProductListView(APIView):
 
     def post(self, request):
         serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid() is False:
+            logger.error(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ProductDetailView(APIView):
-    def get_object(self, pk):
+    def get_product(self, pk):
         try:
             product = Product.objects.get(pk=pk)
             return product
         except Product.DoesNotExist:
-            raise Response(status=status.HTTP_404_NOT_FOUND)
-        except Exception:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            errMsg = f"指定されたID {pk} に紐づく製品が存在しません。"
+            logger.error(errMsg)
+            raise NotFound(detail=errMsg)
+        except Exception as e:
+            errMsg = f"想定外のエラーが発生しました: {str(e)}"
+            logger.error(errMsg)
+            raise APIException(detail=errMsg)
 
     def get(self, request, *args, **kwargs):
-        product = self.get_object(kwargs.get("pk"))
-        serializer = ProductSerializer(product, many=False)
+        product = self.get_product(kwargs.get("pk"))
+        serializer = ProductSerializer(product)
         return Response(serializer.data)
 
     def put(self, request, *args, **kwargs):
-        product = self.get_object(kwargs.get("pk"))
+        product = self.get_product(kwargs.get("pk"))
         serializer = ProductSerializer(product, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            logger.error(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
-        product = self.get_object(kwargs.get("pk"))
+        product = self.get_product(kwargs.get("pk"))
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -151,24 +162,17 @@ class RatingListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         product_id = self.request.query_params.get("productId")
-
         if product_id:
             return Rating.objects.filter(product_id=product_id)
-
         return Rating.objects.all()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-
         avg_rating = queryset.aggregate(average=Avg("rating"))["average"]
-
         if avg_rating is None:
             avg_rating = 0
-
         serializer = self.get_serializer(queryset.order_by("-created_at"), many=True)
-
         response_data = {"average_rating": avg_rating, "comments": serializer.data}
-
         return Response(response_data, status=status.HTTP_200_OK)
 
 

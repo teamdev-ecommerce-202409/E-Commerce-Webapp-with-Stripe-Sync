@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import timedelta
 
 from django.urls import reverse
 from django.utils import timezone
@@ -10,12 +10,13 @@ from clothes_shop.serializers import ProductSerializer
 
 
 class ProductTests(APITestCase):
-
     def setUp(self):
         self.size = Size.objects.create(name="XL")
         self.target = Target.objects.create(name="メンズ")
         self.cloth_type = ClothesType.objects.create(name="シャツ")
         self.brand = Brand.objects.create(name="NIKE")
+        self.one_week_ago = timezone.now() - timedelta(weeks=1)
+        self.one_week_after = timezone.now() + timedelta(weeks=1)
         self.product_1 = Product.objects.create(
             size=self.size,
             target=self.target,
@@ -25,7 +26,7 @@ class ProductTests(APITestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
+            release_date=self.one_week_after,
             stock_quantity=500,
             is_deleted=False,
         )
@@ -38,20 +39,12 @@ class ProductTests(APITestCase):
             description="てすと",
             category="服",
             price=100,
-            release_date=timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
+            release_date=self.one_week_after,
             stock_quantity=500,
             is_deleted=False,
         )
         self.list_url = reverse("clothes_shop:product-list")
         self.detail_url = reverse("clothes_shop:product-detail", kwargs={"pk": self.product_1.id})
-
-    # フィルタリング機能のテストは煩雑になるため、別ファイルに切り出す
-    # def test_get_list(self):
-    #     response = self.client.get(self.list_url)
-    #     product = Product.objects.all()
-    #     serializer = ProductSerializer(product, many=True)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(response.data, serializer.data)
 
     def test_get_individual(self):
         response = self.client.get(self.detail_url)
@@ -66,11 +59,11 @@ class ProductTests(APITestCase):
             "description": "hello",
             "price": 100.02,
             "stock_quantity": 10,
-            "release_date": timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")),
-            "size": self.size.id,
-            "target": self.target.id,
-            "clothes_type": self.cloth_type.id,
-            "brand": self.brand.id,
+            "release_date": self.one_week_ago,
+            "size_pk": self.size.id,
+            "target_pk": self.target.id,
+            "clothes_type_pk": self.cloth_type.id,
+            "brand_pk": self.brand.id,
             "category": "服",
         }
         response = self.client.post(self.list_url, data, format="json")
@@ -81,7 +74,7 @@ class ProductTests(APITestCase):
         self.assertEqual(product_created.description, "hello")
         self.assertEqual(float(product_created.price), 100.02)
         self.assertEqual(product_created.stock_quantity, 10)
-        # self.assertEqual(product_created.release_date, timezone.make_aware(datetime.strptime("2018-12-05", "%Y-%m-%d")))
+        self.assertEqual(product_created.release_date, self.one_week_ago)
         self.assertEqual(product_created.size.name, "XL")
         self.assertEqual(product_created.target.name, "メンズ")
         self.assertEqual(product_created.clothes_type.name, "シャツ")
@@ -94,11 +87,11 @@ class ProductTests(APITestCase):
             "description": "hello",
             "price": 9000,
             "stock_quantity": 1780,
-            "release_date": datetime.strptime("2016-12-05", "%Y-%m-%d"),
-            "size": self.size.id,
-            "target": self.target.id,
-            "clothes_type": self.cloth_type.id,
-            "brand": self.brand.id,
+            "release_date": self.one_week_ago,
+            "size": self.size.name,
+            "target": self.target.name,
+            "clothes_type": self.cloth_type.name,
+            "brand": self.brand.name,
             "category": "服",
         }
         response = self.client.put(self.detail_url, data)
@@ -108,7 +101,7 @@ class ProductTests(APITestCase):
         self.assertEqual(self.product_1.description, "hello")
         self.assertEqual(self.product_1.price, 9000)
         self.assertEqual(self.product_1.stock_quantity, 1780)
-        # self.assertEqual(self.product_1.release_date, datetime.strptime("2016-12-05", "%Y-%m-%d"))
+        self.assertEqual(self.product_1.release_date, self.one_week_ago)
         self.assertEqual(self.product_1.size.name, "XL")
         self.assertEqual(self.product_1.target.name, "メンズ")
         self.assertEqual(self.product_1.clothes_type.name, "シャツ")
