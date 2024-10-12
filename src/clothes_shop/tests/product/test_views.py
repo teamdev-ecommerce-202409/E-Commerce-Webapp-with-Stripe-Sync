@@ -60,10 +60,10 @@ class ProductTests(APITestCase):
             "price": 100.02,
             "stock_quantity": 10,
             "release_date": self.one_week_ago,
-            "size": self.size.name,
-            "target": self.target.name,
-            "clothes_type": self.cloth_type.name,
-            "brand": self.brand.name,
+            "size_pk": self.size.id,
+            "target_pk": self.target.id,
+            "clothes_type_pk": self.cloth_type.id,
+            "brand_pk": self.brand.id,
             "category": "服",
         }
         response = self.client.post(self.list_url, data, format="json")
