@@ -14,8 +14,9 @@ services:
     build: .
     volumes:
       - ./src:/django/src
-      - ./logs:/django/logs
     ports:
       - "8081:8080"
     depends_on:
       - db
+    env_file:
+      - .env 

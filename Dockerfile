@@ -10,8 +10,8 @@ WORKDIR /django
 
 RUN apt update && apt upgrade -y
 RUN apt install -y python3.12 python3-pip python3-venv
-RUN apt install -y pkg-config
-RUN apt install -y libmysqlclient-dev
+RUN apt install -y pkg-config libmysqlclient-dev libjpeg-dev zlib1g-dev  # Pillowに必要な依存関係を追加
+RUN apt install -y libpng-dev libfreetype6-dev  # 追加で必要な画像ライブラリをインストール
 
 COPY requirements.txt /django
 COPY .env /django
