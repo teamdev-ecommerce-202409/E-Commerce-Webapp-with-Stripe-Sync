@@ -3,13 +3,5 @@ mysql/init/
 **/__pycache__/**
 .env
 venv/
-<<<<<<< HEAD
 mysql-variables.env
 logs/
-=======
-.env.dev
-.env.staging
-.env.prod
-mysql-variables.env
-logs/
->>>>>>> e2bd6ad (Update .gitignore and resolve conflict in requirements.txt)
