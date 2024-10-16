@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
+from libs.email_utils import send_email
 import json
 
 User = get_user_model()
@@ -27,17 +28,14 @@ class RegisterUserView(APIView): # ユーザー登録API
         user.save()
 
         # メール送信
-        send_confirmation_email(user)
+        # send_confirmation_email(user)
+        send_email(user, "confirmation")
         return JsonResponse({"message": "ユーザー登録が完了し、確認メールが送信されました。"}, status=201)
 
 class LogoutView(APIView): # ログアウトAPI
     def post(self, request, *args, **kwargs):
-            # token = request.headers.get('Authorization').split(' ')[1]
-            # refresh_token = RefreshToken(token)
-            # refresh_token.blacklist()
-            # return JsonResponse({"message": "ログアウトしました。"}, status=200)
         # ヘッダーからではなく、リクエストボディからリフレッシュトークンを取得
-        token = request.data.get('refresh_token')  # ← 修正箇所
+        token = request.data.get('refresh_token') 
 
         if token:
             refresh_token = RefreshToken(token)
@@ -46,24 +44,14 @@ class LogoutView(APIView): # ログアウトAPI
         else:
             return JsonResponse({"message": "リフレッシュトークンが見つかりません。"}, status=400)
 
-# メール送信ロジック
-def send_confirmation_email(user):
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = token_generator.make_token(user)
-    confirm_url = f'http://127.0.0.1:8081/api/auth/registration/account-confirm-email/{uid}/{token}/'
-    
-    send_mail(
-        'Confirm your email',
-        f'Please click the following link to verify your email: {confirm_url}',
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-    )
-
 class SendConfirmationEmailView(APIView):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)  # リクエストボディからJSONデータを取得
         user = User.objects.get(email=data.get("email"))  # メールアドレスでユーザー取得
-        send_confirmation_email(user)  # メール送信処理
+        try:
+            send_email(user, "confirmation")
+        except Exception as e:
+            return JsonResponse({"message": "メール送信に失敗しました。"}, status=500)
         return JsonResponse({"message": "メールが送信されました"}, status=200)
 
 class CustomConfirmEmailView(APIView):
@@ -90,19 +78,11 @@ class PasswordResetView(APIView):
         email = data.get("email")
         user = User.objects.get(email=email)
         # パスワードリセットトークンを生成し、メールを送信
-        send_reset_password_email(user)
+        try:
+            send_email(user, "reset")
+        except Exception as e:
+            return JsonResponse({"message": "パスワードリセットメールの送信に失敗しました。"}, status=500)
         return JsonResponse({"message": "パスワードリセットメールが送信されました。"}, status=200)
-
-def send_reset_password_email(user):
-    token = token_generator.make_token(user)
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    reset_url = f'http://127.0.0.1:8081/api/auth/password/reset/confirm/{uid}/{token}/'
-    send_mail(
-        'Password Reset Request',
-        f'Click the link to reset your password: {reset_url}',
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-    )
 
 class PasswordResetConfirmView(APIView):
     def post(self, request, uidb64, token, *args, **kwargs):

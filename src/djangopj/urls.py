@@ -12,6 +12,7 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("", include("clothes_shop.urls", namespace="clothes_shop")),
     path('api/auth/register/', RegisterUserView.as_view(), name='register'),
     path('api/auth/logout/', LogoutView.as_view(), name='logout'),
     path('api/auth/users/', UserListView.as_view(), name='user_list'),
