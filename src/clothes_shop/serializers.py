@@ -109,6 +109,16 @@ class ProductSerializer(serializers.ModelSerializer):
                 del validated_data[pk_field]
         return super().create(validated_data)
 
+    def update(self, instance, validated_data: dict[str, any]) -> Product:
+        pk_fields = ["size_pk", "target_pk", "clothes_type_pk", "brand_pk"]
+        for pk_field in pk_fields:
+            related_field = pk_field.replace("_pk", "")
+            pk_value = validated_data.get(pk_field, None)
+            if pk_value is not None:
+                validated_data[related_field] = pk_value
+                del validated_data[pk_field]
+        return super().update(instance, validated_data)
+
 
 # Order Serializer (for detail view)
 class OrderSerializer(serializers.ModelSerializer):
