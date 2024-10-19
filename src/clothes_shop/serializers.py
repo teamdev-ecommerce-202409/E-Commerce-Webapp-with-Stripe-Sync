@@ -175,9 +175,41 @@ class WishListSerializer(serializers.ModelSerializer):
 
 # CartItem Serializer
 class CartItemSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField(read_only=True)
+    product_pk = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), write_only=True)
+
     class Meta:
         model = CartItem
-        fields = ("user", "product", "quantity")
+
+        fields = (
+            "user",
+            "product",
+            "quantity",
+            "product_pk",
+        )
+
+    def get_product(self, obj: CartItem):
+        return ProductSerializer(obj.product).data
+
+    def create(self, validated_data: dict[str, any]) -> CartItem:
+        pk_fields = ["product_pk"]
+        for pk_field in pk_fields:
+            related_field = pk_field.replace("_pk", "")
+            pk_value = validated_data.get(pk_field, None)
+            if pk_value is not None:
+                validated_data[related_field] = pk_value
+                del validated_data[pk_field]
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data: dict[str, any]) -> CartItem:
+        pk_fields = ["size_pk"]
+        for pk_field in pk_fields:
+            related_field = pk_field.replace("_pk", "")
+            pk_value = validated_data.get(pk_field, None)
+            if pk_value is not None:
+                validated_data[related_field] = pk_value
+                del validated_data[pk_field]
+        return super().update(instance, validated_data)
 
 
 # OrderItem Serializer
