@@ -223,9 +223,27 @@ class WishListDetailView(generics.RetrieveUpdateDestroyAPIView):
         return get_object_or_404(WishList, pk=self.kwargs.get("pk"))
 
 
-class CartItemListCreateView(generics.ListCreateAPIView):
-    queryset = CartItem.objects.all()
-    serializer_class = CartItemSerializer
+class CartItemListCreateView(APIView):
+    def get(self, request):
+        userId = request.query_params.get("user")
+        print(userId)
+
+        filters = {}
+        if userId:
+            filters["user_id"] = userId
+        else:
+            errMsg = "userIdを設定してください。"
+            logger.error(errMsg)
+            return Response(
+                {"message": errMsg},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cartItems = CartItem.objects.filter(**filters).order_by("-created_at")
+
+        serializer = CartItemSerializer(cartItems, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CartItemDetailView(generics.RetrieveUpdateDestroyAPIView):
