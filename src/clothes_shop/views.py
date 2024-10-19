@@ -226,7 +226,6 @@ class WishListDetailView(generics.RetrieveUpdateDestroyAPIView):
 class CartItemListCreateView(APIView):
     def get(self, request):
         userId = request.query_params.get("user")
-        print(userId)
 
         filters = {}
         if userId:
