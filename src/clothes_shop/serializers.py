@@ -82,7 +82,6 @@ class ProductSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
-            "is_deleted",
             "created_at",
             "updated_at",
         )
