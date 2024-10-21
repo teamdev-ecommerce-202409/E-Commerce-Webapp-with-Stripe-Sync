@@ -119,15 +119,20 @@ class ProductSerializer(serializers.ModelSerializer):
                 del validated_data[pk_field]
         return super().update(instance, validated_data)
 
+# OrderItemSerializerを追加
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ("order", "product", "quantity", "unit_price", "created_at", "updated_at")
+
 
 # Order Serializer (for detail view)
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = serializers.StringRelatedField(many=True)
+    order_items = OrderItemSerializer(many=True)#Orderの中に含まれる各OrderItemの詳細情報も含めた、よりリッチなレスポンスを得るため
 
     class Meta:
         model = Order
         fields = ("id", "user", "order_date", "order_status", "total_price", "order_items")
-
 
 # Order List Serializer (for listing orders)
 class OrderListSerializer(serializers.ListSerializer):
