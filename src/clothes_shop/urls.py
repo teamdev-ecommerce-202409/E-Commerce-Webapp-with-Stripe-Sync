@@ -11,6 +11,7 @@ urlpatterns = [
     # Order API URLs
     path("api/orders/", views.OrderListCreateView.as_view(), name="order-list-create"),
     path("api/orders/<int:pk>/", views.OrderDetailView.as_view(), name="order-detail"),
+    path('api/orders-with-items/', views.OrderWithItemsListView.as_view(), name='order-with-items'),
     # Rating API URLs
     path("api/ratings/", views.RatingListCreateView.as_view(), name="rating-list-create"),
     path("api/ratings/<int:pk>/", views.RatingDetailView.as_view(), name="rating-detail"),
