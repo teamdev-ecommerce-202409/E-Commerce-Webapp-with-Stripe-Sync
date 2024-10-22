@@ -244,6 +244,54 @@ class CartItemListCreateView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def post(self, request):
+
+        user_id = request.data.get("user_id")
+        product_id = request.data.get("product_id")
+        quantity = request.data.get("quantity")
+
+        if not user_id or not product_id or quantity is None:
+            errMsg = "userId、product_id、quantityを設定してください。"
+            logger.error(errMsg)
+            return Response(
+                {"message": errMsg},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(pk=user_id)
+            product = Product.objects.get(pk=product_id)
+        except User.DoesNotExist:
+            errMsg = f"指定のuser_id:{user_id}は存在しません。"
+            logger.error(errMsg)
+            return Response(
+                {"message": errMsg},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Product.DoesNotExist:
+            errMsg = f"指定のproduct_id:{product_id}は存在しません。"
+            logger.error(errMsg)
+            return Response(
+                {"message": errMsg},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cart_item, is_created = CartItem.objects.update_or_create(
+            user_id=user_id,
+            product_id=product_id,
+            defaults={"quantity": quantity},
+        )
+
+        if is_created:
+            message = f"指定のproduct_id:{product_id}はカートに新規登録されました。"
+        else:
+            message = f"指定のproduct_id:{product_id}の数量を変更しました。"
+
+        return Response(
+            {"message": message, "cart_item": CartItemSerializer(cart_item).data},
+            status=status.HTTP_200_OK,
+        )
+
 
 class CartItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CartItem.objects.all()
