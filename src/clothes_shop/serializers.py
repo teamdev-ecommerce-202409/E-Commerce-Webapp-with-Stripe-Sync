@@ -150,13 +150,54 @@ class RatingListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         return [Rating(**item) for item in validated_data]
 
-
-# User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "user_name", "email_address", "role", "address")
+        fields = (
+            'id', 
+            'email', 
+            'username', 
+            'password', 
+            'role', 
+            'is_active', 
+            'is_staff', 
+            'first_name', 
+            'last_name', 
+            'address',
+            'profile_picture',
+            'date_joined', 
+            'last_login',
+            'created_at', 
+            'updated_at'
+        )
+        extra_kwargs = {'password': {'write_only': True}}  # パスワードは書き込み専用に設定
 
+    def create(self, validated_data):
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            role=validated_data['role'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            address=validated_data.get('address', ''),
+            profile_picture=validated_data.get('profile_picture', None),
+        )
+        user.set_password(validated_data['password'])  # パスワードをハッシュ化して保存
+        user.save()
+        return user
+    
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get('email', instance.email)
+        instance.username = validated_data.get('username', instance.username)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.address = validated_data.get('address', instance.address)
+        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
+        instance.role = validated_data.get('role', instance.role)
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
 
 # Favorite Serializer
 class FavoriteSerializer(serializers.ModelSerializer):
