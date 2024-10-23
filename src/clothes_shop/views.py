@@ -249,8 +249,8 @@ class CartItemListCreateView(APIView):
         user_id = request.data.get("user_id")
         product_id = request.data.get("product_id")
         quantity = request.data.get("quantity")
-        if not user_id or not product_id or quantity is None:
-            errMsg = "userId、product_id、quantityを設定してください。"
+        if not user_id or not product_id:
+            errMsg = "userId、product_idを設定してください。"
             logger.error(errMsg)
             return Response(
                 {"message": errMsg},
@@ -275,17 +275,28 @@ class CartItemListCreateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        cart_item, is_created = CartItem.objects.update_or_create(
-            user_id=user_id,
-            product_id=product_id,
-            defaults={"quantity": quantity},
-        )
-
-        if is_created:
-            message = f"指定のproduct_id:{product_id}はカートに新規登録されました。"
+        if quantity is None:
+            cart_item, is_created = CartItem.objects.get_or_create(
+                user_id=user_id,
+                product_id=product_id,
+                defaults={"quantity": 1},
+            )
+            if not is_created:
+                cart_item.quantity += 1
+                cart_item.save()
+                message = f"指定のproduct_id:{product_id}の数量を1増加しました。"
+            else:
+                message = f"指定のproduct_id:{product_id}はカートに新規登録されました。"
         else:
-            message = f"指定のproduct_id:{product_id}の数量を変更しました。"
-
+            cart_item, is_created = CartItem.objects.update_or_create(
+                user_id=user_id,
+                product_id=product_id,
+                defaults={"quantity": quantity},
+            )
+            if is_created:
+                message = f"指定のproduct_id:{product_id}はカートに新規登録されました。"
+            else:
+                message = f"指定のproduct_id:{product_id}の数量を変更しました。"
         return Response(
             {"message": message, "cart_item": CartItemSerializer(cart_item).data},
             status=status.HTTP_200_OK,
