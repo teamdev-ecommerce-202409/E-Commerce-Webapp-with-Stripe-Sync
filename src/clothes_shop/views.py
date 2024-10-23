@@ -291,6 +291,46 @@ class CartItemListCreateView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    def delete(self, request):
+
+        user_id = request.data.get("user_id")
+        product_id = request.data.get("product_id")
+
+        if not user_id or not product_id:
+            errMsg = "userId、product_idを設定してください。"
+            logger.error(errMsg)
+            return Response(
+                {"message": errMsg},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(pk=user_id)
+            product = Product.objects.get(pk=product_id)
+            cartItem = CartItem.objects.get(
+                user_id=user_id,
+                product_id=product_id,
+            )
+        except User.DoesNotExist:
+            errMsg = f"指定のuser_id:{user_id}は存在しません。"
+            logger.error(errMsg)
+            return Response(
+                {"message": errMsg, "result": False},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Product.DoesNotExist:
+            errMsg = f"指定のproduct_id:{product_id}は存在しません。"
+            logger.error(errMsg)
+            return Response(
+                {"message": errMsg, "result": False},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        CartItem.objects.filter(user_id=user_id, product_id=product_id).delete()
+        return Response(
+            {"message": f"product_id:{product_id}をカートから削除しました。", "result": True},
+            status=status.HTTP_200_OK,
+        )
+
 
 class CartItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CartItem.objects.all()
