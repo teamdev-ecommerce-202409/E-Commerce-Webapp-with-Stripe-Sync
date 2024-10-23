@@ -249,7 +249,6 @@ class CartItemListCreateView(APIView):
         user_id = request.data.get("user_id")
         product_id = request.data.get("product_id")
         quantity = request.data.get("quantity")
-
         if not user_id or not product_id or quantity is None:
             errMsg = "userId、product_id、quantityを設定してください。"
             logger.error(errMsg)
