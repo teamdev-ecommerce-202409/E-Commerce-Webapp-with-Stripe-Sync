@@ -61,6 +61,48 @@ class CartItemListCreateViewTests(APITestCase):
         expectedMsg = "userIdを設定してください。"
         self.assertEqual(response.data["message"], expectedMsg)
 
+    def test_post_value_error_wihtout_params(self):
+        data = {"error": "hogehoge"}
+        response = self.client.post(self.list_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expectedMsg = "userId、product_idを設定してください。"
+        self.assertEqual(response.data["message"], expectedMsg)
+
+    def test_post_value_error_notExist_user(self):
+        data = {"user_id": 9999, "product_id": self.product.id}
+        response = self.client.post(self.list_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expectedMsg = "指定のuser_id:9999は存在しません。"
+        self.assertEqual(response.data["message"], expectedMsg)
+
+    def test_post_value_error_notExist_product(self):
+        data = {"user_id": self.user.id, "product_id": 9999}
+        response = self.client.post(self.list_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expectedMsg = "指定のproduct_id:9999は存在しません。"
+        self.assertEqual(response.data["message"], expectedMsg)
+
+    def test_delete_value_error_wihtout_params(self):
+        data = {"error": "hogehoge"}
+        response = self.client.delete(self.list_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expectedMsg = "userId、product_idを設定してください。"
+        self.assertEqual(response.data["message"], expectedMsg)
+
+    def test_delete_value_error_notExist_user(self):
+        data = {"user_id": 9999, "product_id": self.product.id}
+        response = self.client.delete(self.list_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expectedMsg = "指定のuser_id:9999は存在しません。"
+        self.assertEqual(response.data["message"], expectedMsg)
+
+    def test_delete_value_error_notExist_product(self):
+        data = {"user_id": self.user.id, "product_id": 9999}
+        response = self.client.delete(self.list_url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expectedMsg = "指定のproduct_id:9999は存在しません。"
+        self.assertEqual(response.data["message"], expectedMsg)
+
     # def test_post_invalid_serializer(self):
     # postロジックを考えてから解放
     #     data = {
