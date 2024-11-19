@@ -158,4 +158,9 @@ urlpatterns = [
         checkout_views.StripeCheckoutItemsView.as_view(),
         name="stripe-checkout-items",
     ),
+    path(
+        "api/checkout/sessions/list/",
+        checkout_views.StripeCheckoutListView.as_view(),
+        name="stripe-checkout-list",
+    ),
 ]

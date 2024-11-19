@@ -1,9 +1,7 @@
 import hashlib
 import logging
 import os
-import string
 from pathlib import Path
-from typing import Any
 
 import boto3
 import environ

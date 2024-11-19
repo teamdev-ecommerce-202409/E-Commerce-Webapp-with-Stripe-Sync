@@ -63,3 +63,12 @@ class StripeCheckoutItemsView(APIView):
         checkout_session_id = request.data["checkout_session_id"]
         data = striep_service.get_checkout_items(checkout_session_id)
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+class StripeCheckoutListView(APIView):
+    permission_classes = [IsAuthenticated & (IsCustomer | IsGuest)]
+
+    def post(self, request):
+        stripe_customer_id = request.data["stripe_customer_id"]
+        data = striep_service.get_checkout_list(stripe_customer_id)
+        return Response(data=data, status=status.HTTP_200_OK)

@@ -108,13 +108,17 @@ class StripeService:
         session = stripe.checkout.Session.create(**session_params)
         return session.url
 
-    def get_checkout_session(self, stripe_checkout_session_id: str) -> Session:
-        session: Session = stripe.checkout.Session.retrieve(stripe_checkout_session_id)
+    def get_checkout_session(self, checkout_session_id: str) -> Session:
+        session: Session = stripe.checkout.Session.retrieve(checkout_session_id)
         return session
 
-    def get_checkout_items(self, stripe_checkout_session_id: str) -> Session:
-        session: Session = stripe.checkout.Session.list_line_items(stripe_checkout_session_id)
+    def get_checkout_items(self, checkout_session_id: str) -> Session:
+        session: Session = stripe.checkout.Session.list_line_items(checkout_session_id)
         return session
+
+    def get_checkout_list(self, stripe_customer_id: str) -> Session:
+        sessionList: Session = stripe.checkout.Session.list(customer=stripe_customer_id)
+        return sessionList
 
     def create_customer(self, customerData: CustomerData) -> str:
         customer: stripe.Customer = stripe.Customer.create(
