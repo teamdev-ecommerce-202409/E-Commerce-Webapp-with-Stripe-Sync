@@ -7,6 +7,7 @@ from clothes_shop.views import (
     check_access_views,
     checkout_views,
     favorite_views,
+    invoice_views,
     order_views,
     payment_views,
     product_views,
@@ -162,5 +163,10 @@ urlpatterns = [
         "api/checkout/sessions/list/",
         checkout_views.StripeCheckoutListView.as_view(),
         name="stripe-checkout-list",
+    ),
+    path(
+        "api/invoice/",
+        invoice_views.StripeInvoiceView.as_view(),
+        name="stripe-invoice",
     ),
 ]

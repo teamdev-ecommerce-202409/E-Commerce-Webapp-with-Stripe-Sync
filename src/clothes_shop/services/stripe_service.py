@@ -50,7 +50,6 @@ class StripeService:
         stripe.Price.create(
             product=product.id,
             unit_amount=price,
-            tax_behavior="exclusive",
             currency="jpy",
         )
         return product.id
@@ -69,7 +68,6 @@ class StripeService:
             stripe.Price.create(
                 product=product_id,
                 unit_amount=newPrice,
-                tax_behavior="exclusive",
                 currency="jpy",
             )
         return None
@@ -94,8 +92,8 @@ class StripeService:
     ) -> str:
         line_items: list[Any] = []
         for checkout_data in checkout_data_list:
-            price_id: str = self.__get_price(checkout_data.stripe_product_id)
-            line_items.append({"price": price_id, "quantity": checkout_data.product_amount})
+            price: stripe.Price = self.__get_price(checkout_data.stripe_product_id)
+            line_items.append({"price": price, "quantity": checkout_data.product_amount})
         session_params = {
             "mode": "payment",
             "line_items": line_items,
@@ -119,6 +117,29 @@ class StripeService:
     def get_checkout_list(self, stripe_customer_id: str) -> Session:
         sessionList: Session = stripe.checkout.Session.list(customer=stripe_customer_id)
         return sessionList
+
+    def create_invoice(
+        self, stripe_customer_id: str, checkout_data_list: list[CheckoutData]
+    ) -> None:
+        invoice: stripe.Invoice = stripe.Invoice.create(
+            customer=stripe_customer_id,
+            collection_method="send_invoice",
+            days_until_due=30,
+        )
+        for checkout_data in checkout_data_list:
+            price: stripe.Price = self.__get_price(checkout_data.stripe_product_id)
+            stripe.InvoiceItem.create(
+                customer=stripe_customer_id,
+                price_data={
+                    "product": checkout_data.stripe_product_id,
+                    "currency": "jpy",
+                    "unit_amount": price.unit_amount,
+                },
+                quantity=checkout_data.product_amount,
+                invoice=invoice.id,
+            )
+        stripe.Invoice.send_invoice(invoice.id)
+        return
 
     def create_customer(self, customerData: CustomerData) -> str:
         customer: stripe.Customer = stripe.Customer.create(

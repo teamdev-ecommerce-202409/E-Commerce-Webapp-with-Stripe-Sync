@@ -62,7 +62,7 @@ class OrderDetailView(APIView):
         order = get_object_or_404(Order, pk=pk)
         if not request.user.is_staff and request.user.id != order.user.id:
             errMsg = (
-                f"ログインユーザー はadminユーザーではなく、かつ当該orderの注文者でもありません。"
+                "ログインユーザー はadminユーザーではなく、かつ当該orderの注文者でもありません。"
             )
             logger.error(errMsg)
             raise PermissionDenied(detail=errMsg)
