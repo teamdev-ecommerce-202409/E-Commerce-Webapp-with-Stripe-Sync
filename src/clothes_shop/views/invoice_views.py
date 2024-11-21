@@ -6,9 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from clothes_shop.permissions import IsCustomer
-from clothes_shop.serializers.checkout_serializers import (
-    CheckoutListSerializer,
-    CheckoutSerializer,
+from clothes_shop.serializers.cart_item_serializers import (
+    CartItemListSerializer,
+    CartItemSerializer,
 )
 from clothes_shop.services.stripe_service import CheckoutData, StripeService
 from clothes_shop.views.product_views import get_product
@@ -21,13 +21,13 @@ class StripeInvoiceView(APIView):
     permission_classes = [IsAuthenticated & IsCustomer]
 
     def post(self, request):
-        serializer = CheckoutListSerializer(data=request.data)
+        serializer = CartItemListSerializer(data=request.data)
         if serializer.is_valid() is False:
             logger.error(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         validated_data = serializer.validated_data
         checkout_instances = [
-            CheckoutSerializer(data=checkout_data) for checkout_data in validated_data
+            CartItemSerializer(data=checkout_data) for checkout_data in validated_data
         ]
         checkout_data_list: list[CheckoutData] = []
         for checkout_instance in checkout_instances:

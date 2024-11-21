@@ -114,8 +114,11 @@ class StripeService:
         session: Session = stripe.checkout.Session.list_line_items(checkout_session_id)
         return session
 
-    def get_checkout_list(self, stripe_customer_id: str) -> Session:
-        sessionList: Session = stripe.checkout.Session.list(customer=stripe_customer_id)
+    def get_checkout_list(self, stripe_customer_id: str, starting_after: str | None) -> Session:
+        session_params = {"customer": stripe_customer_id, "limit": 10}
+        if starting_after:
+            session_params["starting_after"] = starting_after
+        sessionList: Session = stripe.checkout.Session.list(**session_params)
         return sessionList
 
     def create_invoice(
