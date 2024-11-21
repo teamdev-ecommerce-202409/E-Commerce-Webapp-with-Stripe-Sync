@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from clothes_shop.models.product import Product
+from clothes_shop.models.user import User
 from clothes_shop.models.user_interaction import WishList
 from clothes_shop.serializers.user_interaction_serializers import WishListSerializer
 
@@ -75,6 +76,11 @@ class WishListDetailView(APIView):
         if not user_id:
             raise NotFound(detail="User ID がありません.")
 
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise NotFound(detail="該当するユーザーが見つかりません。")
+
         wishs = WishList.objects.filter(user_id=user_id, is_public=True)
 
         paginator = PageNumberPagination()
@@ -82,5 +88,8 @@ class WishListDetailView(APIView):
         paginated_products = paginator.paginate_queryset(wishs, request)
 
         serializer_data = WishListSerializer(paginated_products, many=True).data
-
-        return paginator.get_paginated_response(serializer_data)
+        response_data = {
+            "username": user.name,
+            "wishlists": serializer_data,
+        }
+        return paginator.get_paginated_response(response_data)
