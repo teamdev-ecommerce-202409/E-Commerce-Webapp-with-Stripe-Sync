@@ -1,28 +1,84 @@
 import logging
 
-from django.utils.timezone import now
 from rest_framework import status
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from clothes_shop.models.checkout import Checkout
+from clothes_shop.models.order import Order
 from clothes_shop.permissions import IsAdmin, IsCustomer, IsGuest
 from clothes_shop.serializers.cart_item_serializers import (
     CartItemListSerializer,
     CartItemSerializer,
 )
-from clothes_shop.serializers.checkout_serializers import CheckoutSerializer
+from clothes_shop.serializers.order_serializers import OrderSerializer
 from clothes_shop.services.stripe_service import CheckoutData, StripeService
 from clothes_shop.views.product_views import get_product
-from clothes_shop.views.user_views import get_user
 
 logger = logging.getLogger(__name__)
 striep_service = StripeService()
 
 
+def get_order(id: int) -> Order:
+    try:
+        order = Order.objects.get(pk=id)
+        return order
+    except Order.DoesNotExist:
+        errMsg = f"指定されたID {id} に紐づくオーダーが存在しません。"
+        logger.error(errMsg)
+        raise NotFound(detail=errMsg)
+    except Exception as e:
+        errMsg = f"想定外のエラーが発生しました: {str(e)}"
+        logger.error(errMsg)
+        raise APIException(detail=errMsg)
+
+
 class StripeCheckoutView(APIView):
     permission_classes = [IsAuthenticated & (IsCustomer | IsGuest)]
+
+    def __checkout(
+        self, role: str, customer_id: str, cart_item_serializer: CartItemSerializer
+    ) -> str:
+        checkout_data_list: list[CheckoutData] = []
+        for checkout_instance in cart_item_serializer:
+            checkout_instance.is_valid()
+            product_id = checkout_instance.validated_data["product_id"]
+            amount = checkout_instance.validated_data["amount"]
+            product = get_product(product_id)
+            stripe_product_id = product.stripe_product_id
+            checkout_data_list.append(CheckoutData(stripe_product_id, amount))
+        redirect_url = striep_service.checkout(
+            stripe_customer_id=customer_id if role != "guest" else None,
+            checkout_data_list=checkout_data_list,
+        )
+        return redirect_url
+
+    def __create_order(self, user_id: int, cart_item_serializer: CartItemSerializer) -> str:
+        order_data = {
+            "user_pk": user_id,
+            "stripe_checkout_session_id": None,
+            "order_status": "pending",
+            "total_price": 0,
+        }
+        total_price = 0
+        order_item_data_list = []
+        for checkout_instance in cart_item_serializer:
+            checkout_instance.is_valid()
+            product_id = checkout_instance.validated_data["product_id"]
+            amount = checkout_instance.validated_data["amount"]
+            product = get_product(product_id)
+            order_item_data = {"product": product, "quantity": amount, "unit_price": product.price}
+            order_item_data_list.append(order_item_data)
+            total_price += amount * product.price
+
+        order_data["total_price"] = total_price
+        order_serializer = OrderSerializer(data=order_data)
+        if order_serializer.is_valid():
+            order = order_serializer.save()
+        for order_item_data in order_item_data_list:
+            order_item_data["order"] = get_order(order["id"])
+        return order["id"]
 
     def post(self, request):
         """決済のためにStripeチェックアウト画面のURLを返す"""
@@ -31,24 +87,18 @@ class StripeCheckoutView(APIView):
             logger.error(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         validated_data = serializer.validated_data
-        checkout_instances = [
+
+        cart_item_serializer = [
             CartItemSerializer(data=checkout_data) for checkout_data in validated_data
         ]
-        checkout_data_list: list[CheckoutData] = []
-        for checkout_instance in checkout_instances:
-            checkout_instance.is_valid()
-            product_id = checkout_instance.validated_data["product_id"]
-            amount = checkout_instance.validated_data["amount"]
-            product = get_product(product_id)
-            stripe_product_id = product.stripe_product_id
-            checkout_data_list.append(CheckoutData(stripe_product_id, amount))
         role = request.user.role
         stripe_customer_id = request.user.stripe_customer_id
-        redirect_url = striep_service.checkout(
-            stripe_customer_id=stripe_customer_id if role != "guest" else None,
-            checkout_data_list=checkout_data_list,
+        redirect_url = self.__checkout(
+            role=role, customer_id=stripe_customer_id, cart_item_serializer=cart_item_serializer
         )
-        data = {"url": redirect_url}
+
+        order_id = self.__create_order(request.user.id, cart_item_serializer)
+        data = {"order_id": order_id, "url": redirect_url}
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -63,36 +113,12 @@ class StripeCheckoutSessionView(APIView):
 
     def post(self, request):
         """Stripeで決済時に作成されるsession-idをDB登録"""
-        user_id = request.data["user_id"]
+        order_id = request.data["order_id"]
         checkout_session_id = request.data["checkout_session_id"]
-        serializer = CheckoutSerializer(
-            data={
-                "user": user_id,
-                "stripe_checkout_session_id": checkout_session_id,
-                "shipping_date": None,
-            }
-        )
-        if not serializer.is_valid():
-            logger.error(serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request):
-        """配送日時を記録"""
-        checkout_session_id = request.data["checkout_session_id"]
-        checkout = Checkout.objects.filter(stripe_checkout_session_id=checkout_session_id)
-        checkout.shipping_date = now()
-        checkout.save()
-        return
-
-    def __is_customer_user_id(self, user_id: str) -> bool:
-        user = get_user(user_id)
-        return user.role == "customer"
-
-    def __is_admin_user_id(self, user_id: str) -> bool:
-        user = get_user(user_id)
-        return user.role == "admin"
+        order = Order.objects.filter(id=order_id)
+        order.stripe_checkout_session_id = checkout_session_id
+        order.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class StripeCheckoutItemsView(APIView):

@@ -9,10 +9,8 @@ from clothes_shop.views import (
     favorite_views,
     invoice_views,
     order_views,
-    payment_views,
     product_views,
     review_views,
-    shipping_views,
     token_views,
     user_views,
     wishlist_views,
@@ -36,6 +34,9 @@ urlpatterns = [
         product_views.ProductDetailView.as_view(),
         name="product-detail",
     ),
+    # Order API URLs
+    path("api/orders/", order_views.OrderListCreateView.as_view(), name="order-list-create"),
+    path("api/orders/<int:pk>/", order_views.OrderDetailView.as_view(), name="order-detail"),
     # Review API URLs
     path(
         "api/reviews/",
@@ -106,24 +107,6 @@ urlpatterns = [
         "api/orderitems/<int:pk>/",
         order_views.OrderItemDetailView.as_view(),
         name="orderitem-detail",
-    ),
-    # Payment API URLs
-    path(
-        "api/payments/", payment_views.PaymentListCreateView.as_view(), name="payment-list-create"
-    ),
-    path(
-        "api/payments/<int:pk>/", payment_views.PaymentDetailView.as_view(), name="payment-detail"
-    ),
-    # Shipping API URLs
-    path(
-        "api/shippings/",
-        shipping_views.ShippingListCreateView.as_view(),
-        name="shipping-list-create",
-    ),
-    path(
-        "api/shippings/<int:pk>/",
-        shipping_views.ShippingDetailView.as_view(),
-        name="shipping-detail",
     ),
     # Size API URLs
     path("api/sizes/", category_views.SizeListCreateView.as_view(), name="size-list-create"),
