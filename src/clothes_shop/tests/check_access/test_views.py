@@ -13,13 +13,13 @@ class CheckAccessAndAdminViewTests(APITestCase):
     def setUp(self):
         fake = Faker("ja_JP")
         # 通常ユーザーの作成
-        self.user = User.objects.create(
+        self.user = User.objects.create_user(
             name=fake.name(),
             stripe_customer_id="hogehoge1",
             email=fake.email(),
-            role="registered",
+            password="pass",
+            role="customer",
             email_validated_at=datetime.now(timezone.utc),
-            address=fake.address(),
             date_joined=datetime.now(timezone.utc),
             is_active=True,
             is_staff=False,
@@ -30,9 +30,9 @@ class CheckAccessAndAdminViewTests(APITestCase):
             name=fake.name(),
             stripe_customer_id="hogehoge2",
             email=fake.email(),
-            role="registered",
+            password="pass",
+            role="admin",
             email_validated_at=datetime.now(timezone.utc),
-            address=fake.address(),
             date_joined=datetime.now(timezone.utc),
             is_active=True,
             is_staff=True,

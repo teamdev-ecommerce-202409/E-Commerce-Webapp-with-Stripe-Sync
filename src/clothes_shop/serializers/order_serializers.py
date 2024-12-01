@@ -36,7 +36,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "order_items",
             "user_pk",
         )
-        read_only_fields = {"order_items"}
+        read_only_fields = ("order_items",)
 
     def get_user(self, obj: Order):
         return UserSerializer(obj.user).data

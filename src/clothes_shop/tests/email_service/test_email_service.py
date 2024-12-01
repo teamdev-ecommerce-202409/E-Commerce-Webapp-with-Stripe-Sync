@@ -1,25 +1,28 @@
-
+import os
 from unittest.mock import patch
-from django.test import TestCase
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+
 from django.conf import settings
+from django.test import TestCase
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
 from clothes_shop.models.user import User
 from clothes_shop.services.email_service import EmailService
-import os
 
 
 class EmailServiceTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
+            stripe_customer_id="hogehoge",
             email="testuser@example.com",
             name="Test User",
+            role="customer",
             password="securepassword123",
             is_active=False,
         )
         self.uid = urlsafe_base64_encode(force_bytes(self.user.pk))
-        self.fixed_token = "test-token" 
-        self.default_frontend_url = os.getenv("CONFIRMATION_URL", "http://127.0.0.1:3000")
+        self.fixed_token = "test-token"
+        self.base_url = os.getenv("CONFIRMATION_URL", "http://127.0.0.1:8081")
 
     @patch("clothes_shop.services.email_service.send_mail")
     @patch("clothes_shop.services.email_service.token_generator")
@@ -47,17 +50,13 @@ class EmailServiceTests(TestCase):
     @patch("clothes_shop.services.email_service.send_mail")
     @patch("clothes_shop.services.email_service.token_generator")
     @patch.dict(os.environ, {"CONFIRMATION_URL": "http://testserver.com"})
-    def test_send_confirmation_email_with_env_url(
-        self, mock_token_generator, mock_send_mail
-    ):
-        mock_token_generator.make_token.return_value = self.fixed_token 
+    def test_send_confirmation_email_with_env_url(self, mock_token_generator, mock_send_mail):
+        mock_token_generator.make_token.return_value = self.fixed_token
         mock_send_mail.return_value = 1
 
         EmailService.send_email(self.user, email_type="confirmation")
 
-        expected_url = (
-            f"http://testserver.com/email-confirmation/{self.uid}/{self.fixed_token}/"
-        )
+        expected_url = f"http://testserver.com/email-confirmation/{self.uid}/{self.fixed_token}/"
 
         args, kwargs = mock_send_mail.call_args
         self.assertIn(expected_url, args[1])

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from clothes_shop.models.user import User
+from clothes_shop.serializers.user_interaction_serializers import AddressSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -35,7 +36,6 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.email = validated_data.get("email", instance.email)
         instance.name = validated_data.get("name", instance.name)
-        instance.address = validated_data.get("address", instance.address)
         instance.role = validated_data.get("role", instance.role)
         if "password" in validated_data:
             instance.set_password(validated_data["password"])
@@ -51,18 +51,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "password",
-            "role", 
-            "is_active", 
-            "is_staff", 
-            "address",
-            ]
+            "role",
+            "is_active",
+            "is_staff",
+        ]
         read_only_fields = ["id", "is_active", "is_staff"]
 
+
 class UserSignupSerializer(serializers.ModelSerializer):
+    address = AddressSerializer(required=True, write_only=True)
+    shipping = AddressSerializer(required=True, write_only=True)
 
     class Meta:
         model = User
-        fields = ["name", "email", "password", "address"]
+        fields = ["name", "email", "password", "address", "shipping"]
         extra_kwargs = {
             "password": {"write_only": True, "min_length": 8},
             "name": {"required": True},
@@ -70,17 +72,19 @@ class UserSignupSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        user = User(
+        validated_data.pop("address", {})
+        validated_data.pop("shipping", {})
+        user = User.objects.create(
             name=validated_data["name"],
             email=validated_data["email"],
-            address=validated_data.get("address", ""),
             stripe_customer_id=validated_data.get("stripe_customer_id", ""),
-            role="registered",
+            role="customer",
             is_active=False,
         )
         user.set_password(validated_data["password"])
         user.save()
         return user
+
 
 class ResendConfirmationEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -92,7 +96,9 @@ class ResendConfirmationEmailSerializer(serializers.Serializer):
                 raise serializers.ValidationError("このユーザーは既に認証されています。")
             return value
         except User.DoesNotExist:
-            raise serializers.ValidationError("指定されたメールアドレスのユーザーが見つかりません。")
+            raise serializers.ValidationError(
+                "指定されたメールアドレスのユーザーが見つかりません。"
+            )
 
 
 class ConfirmEmailSerializer(serializers.Serializer):

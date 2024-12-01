@@ -66,7 +66,8 @@ class UserListCreateView(generics.ListCreateAPIView):
             )
             stripe_customer_id = stripe_service.create_customer(customerData)
             serializer.save(stripe_customer_id=stripe_customer_id)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            response_serializer = self.get_serializer(instance=serializer.instance)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             logger.error(e.detail)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
@@ -87,7 +88,24 @@ class UserDetailView(APIView):
         if not serializer.is_valid():
             logger.error(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        customerData = CustomerData(name=request.data["name"], email=request.data["email"])
+        customerData = CustomerData(
+            name=request.data["name"],
+            email=request.data["email"],
+            address=Address(
+                state=request.data["address"]["state"],
+                city=request.data["address"]["city"],
+                line1=request.data["address"]["line1"],
+                line2=request.data["address"]["line2"],
+                postal_code=request.data["address"]["postal_code"],
+            ),
+            shipping=Address(
+                state=request.data["shipping"]["state"],
+                city=request.data["shipping"]["city"],
+                line1=request.data["shipping"]["line1"],
+                line2=request.data["shipping"]["line2"],
+                postal_code=request.data["shipping"]["postal_code"],
+            ),
+        )
         stripe_service.update_customer(user.stripe_customer_id, customerData)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -115,14 +133,17 @@ class UserSignupView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         try:
+            validated_data = serializer.validated_data
+            address_data = validated_data["address"]
+            shipping_data = validated_data["shipping"]
             customer_data = CustomerData(
-                name=serializer.validated_data["name"],
-                email=serializer.validated_data["email"],
+                name=validated_data["name"],
+                email=validated_data["email"],
+                address=Address(**address_data),
+                shipping=Address(**shipping_data),
             )
             stripe_customer_id = stripe_service.create_customer(customer_data)
-
             user = serializer.save(stripe_customer_id=stripe_customer_id)
-
             try:
                 EmailService.send_email(user, email_type="confirmation")
             except Exception as e:
@@ -134,18 +155,15 @@ class UserSignupView(generics.CreateAPIView):
         except stripe.error.StripeError as e:
             logger.error(f"Stripeエラー: {e}")
             raise ValidationError({"error": "Stripeの顧客登録に失敗しました。"})
-
         except ValidationError as e:
             logger.error(f"バリデーションエラー: {e}")
             raise ValidationError({"error": "入力データに不正があります。"})
-
         except Exception as e:
             logger.error(f"予期しないエラー: {e}")
             raise ValidationError({"error": "ユーザー登録中にエラーが発生しました。"})
 
     def create(self, request, *args, **kwargs):
         email = request.data.get("email")
-
         existing_user = User.objects.filter(email=email).first()
         if existing_user:
             if not existing_user.is_active:

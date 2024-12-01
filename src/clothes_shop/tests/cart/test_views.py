@@ -60,7 +60,6 @@ class CartItemTests(APITestCase):
             email=fake.email(),
             role="registered",
             email_validated_at=timezone.now(),
-            address=fake.address(),
             date_joined=timezone.now(),
             is_active=True,
             is_staff=True,

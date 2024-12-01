@@ -168,7 +168,7 @@ class StripeService:
                 },
             },
         )
-        return customer.id
+        return customer["id"]
 
     def update_customer(self, stripe_customer_id: str, customerData: CustomerData) -> None:
         stripe.Customer.modify(

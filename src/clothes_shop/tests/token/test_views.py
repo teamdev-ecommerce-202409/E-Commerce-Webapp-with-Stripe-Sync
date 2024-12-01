@@ -12,10 +12,11 @@ from clothes_shop.models.user import User
 class TokenAuthTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
+            stripe_customer_id="dummy",
             email="authuser@example.com",
             name="Auth User",
             password="authpass",
-            role="registered",
+            role="customer",
             is_active=True,
         )
 
@@ -30,10 +31,11 @@ class TokenAuthTests(APITestCase):
 class TokenExpiryTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
+            stripe_customer_id="dummy",
             email="expiryuser@example.com",
             name="Expiry User",
             password="exppass",
-            role="registered",
+            role="customer",
             is_active=True,
         )
 

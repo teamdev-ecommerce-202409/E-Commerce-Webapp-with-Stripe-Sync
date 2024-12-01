@@ -1,8 +1,7 @@
 import logging
 
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, status
-from rest_framework.exceptions import APIException, NotFound
+from rest_framework import status
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -43,7 +42,7 @@ class WishListListCreateView(APIView):
             raise NotFound(detail=errMsg)
 
         try:
-            product = Product.objects.get(pk=product_id)
+            Product.objects.get(pk=product_id)
         except Product.DoesNotExist:
             errMsg = f"指定のproduct_id:{product_id}は存在しません。"
             logger.error(errMsg)

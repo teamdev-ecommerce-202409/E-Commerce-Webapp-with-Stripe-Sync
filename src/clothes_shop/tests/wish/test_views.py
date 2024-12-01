@@ -10,7 +10,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from clothes_shop.models import (
     Brand,
-    CartItem,
     ClothesType,
     Product,
     Size,
@@ -61,7 +60,6 @@ class WishListListCreateViewTests(APITestCase):
             email=fake.email(),
             role="registered",
             email_validated_at=timezone.now(),
-            address=fake.address(),
             date_joined=timezone.now(),
             is_active=True,
             is_staff=True,

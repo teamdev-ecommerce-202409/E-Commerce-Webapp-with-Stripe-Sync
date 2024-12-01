@@ -8,7 +8,7 @@ from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, name, password, role, **extra_fields):
+    def create_user(self, email, name, password, role, stripe_customer_id, **extra_fields):
         if not email:
             raise ValueError("Email is required")
         if not name:
@@ -18,7 +18,13 @@ class UserManager(BaseUserManager):
         if not role or (role != "admin" and role != "customer"):
             raise ValueError("role is required ('admin' or 'customer')")
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name, role=role)
+        user = self.model(
+            email=email,
+            name=name,
+            role=role,
+            stripe_customer_id=stripe_customer_id,
+            **extra_fields,
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -45,7 +51,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         default="guest",
     )  # 次善の策としてmodelのrole項目をデフォルトでguest
     email_validated_at = models.DateTimeField(null=True, blank=True)
-    address = models.TextField(blank=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)

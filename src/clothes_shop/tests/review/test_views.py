@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.urls import reverse
 from django.utils import timezone
@@ -44,7 +44,6 @@ class ProductReviewListViewTest(APITestCase):
             email=fake.email(),
             role="registered",
             email_validated_at=timezone.now(),
-            address=fake.address(),
             date_joined=timezone.now(),
             is_active=True,
             is_staff=True,
@@ -98,7 +97,6 @@ class UserProductReviewDetailViewTest(APITestCase):
             email=fake.email(),
             role="registered",
             email_validated_at=timezone.now(),
-            address=fake.address(),
             date_joined=timezone.now(),
             is_active=True,
             is_staff=True,
