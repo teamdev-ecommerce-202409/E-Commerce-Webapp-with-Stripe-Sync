@@ -20,7 +20,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = OrderItemSerializer(many=True)
+    order_items = OrderItemSerializer(many=True, read_only=True)
     user = serializers.SerializerMethodField(read_only=True)
     user_pk = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
 
@@ -36,7 +36,6 @@ class OrderSerializer(serializers.ModelSerializer):
             "order_items",
             "user_pk",
         )
-        read_only_fields = ("order_items",)
 
     def get_user(self, obj: Order):
         return UserSerializer(obj.user).data

@@ -12,7 +12,10 @@ from clothes_shop.serializers.cart_item_serializers import (
     CartItemListSerializer,
     CartItemSerializer,
 )
-from clothes_shop.serializers.order_serializers import OrderSerializer
+from clothes_shop.serializers.order_serializers import (
+    OrderItemSerializer,
+    OrderSerializer,
+)
 from clothes_shop.services.stripe_service import CheckoutData, StripeService
 from clothes_shop.views.product_views import get_product
 
@@ -74,11 +77,20 @@ class StripeCheckoutView(APIView):
 
         order_data["total_price"] = total_price
         order_serializer = OrderSerializer(data=order_data)
-        if order_serializer.is_valid():
-            order = order_serializer.save()
-        for order_item_data in order_item_data_list:
-            order_item_data["order"] = get_order(order["id"])
-        return order["id"]
+        if not order_serializer.is_valid():
+            logger.error(order_serializer.errors)
+            return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        order_serializer.save()
+        order = order_serializer.instance
+
+        for i in range(len(order_item_data_list)):
+            order_item_data_list[i]["order"] = get_order(order.id)
+
+        items_serializer = OrderItemSerializer(data=cart_item_serializer, many=True)
+        if items_serializer.is_valid():
+            order = items_serializer.save()
+
+        return order.id
 
     def post(self, request):
         """決済のためにStripeチェックアウト画面のURLを返す"""
@@ -100,6 +112,15 @@ class StripeCheckoutView(APIView):
         order_id = self.__create_order(request.user.id, cart_item_serializer)
         data = {"order_id": order_id, "url": redirect_url}
         return Response(data, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        """決済時に発行されるチェックアウトセッションIDをOrderに紐付ける"""
+        order_id = request.data["order_id"]
+        stripe_checkout_session_id = request.data["stripe_checkout_session_id"]
+        Order.objects.filter(pk=order_id).update(
+            stripe_checkout_session_id=stripe_checkout_session_id, order_status="confirmed"
+        )
+        return Response(status=status.HTTP_200_OK)
 
 
 class StripeCheckoutSessionView(APIView):

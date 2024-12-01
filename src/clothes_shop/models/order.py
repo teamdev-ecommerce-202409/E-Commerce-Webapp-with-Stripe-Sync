@@ -16,7 +16,9 @@ class Order(models.Model):
         ("completed", "Completed"),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    stripe_checkout_session_id = models.CharField(max_length=255, unique=True, default=None)
+    stripe_checkout_session_id = models.CharField(
+        max_length=255, unique=True, null=True, default=None
+    )
     order_date = models.DateTimeField(auto_now_add=True)
     order_status = models.CharField(max_length=50, choices=ORDER_STATUS_CHOICES, default="pending")
     total_price = models.DecimalField(max_digits=10, decimal_places=2)

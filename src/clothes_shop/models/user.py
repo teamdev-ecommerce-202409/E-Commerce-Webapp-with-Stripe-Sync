@@ -15,8 +15,8 @@ class UserManager(BaseUserManager):
             raise ValueError("Name is required")
         if not password:
             raise ValueError("Password is required")
-        if not role or (role != "admin" and role != "customer"):
-            raise ValueError("role is required ('admin' or 'customer')")
+        if not role or (role not in ["admin", "customer", "guest"]):
+            raise ValueError("role is required ('admin' or 'customer' or 'guest')")
         email = self.normalize_email(email)
         user = self.model(
             email=email,
