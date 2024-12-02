@@ -1,10 +1,11 @@
+import logging
 import os
-from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-import logging
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class EmailService:
             token = token_generator.make_token(user)
 
             if email_type == "confirmation":
-                frontend_base_url = os.getenv("CONFIRMATION_URL", "http://127.0.0.1:3000")
+                frontend_base_url = os.getenv("CONFIRMATION_URL", "http://127.0.0.1:8081")
                 url = f"{frontend_base_url}/email-confirmation/{uid}/{token}/"
                 subject = "Confirm your email"
                 message = f"Please click the following link to verify your email: {url}"

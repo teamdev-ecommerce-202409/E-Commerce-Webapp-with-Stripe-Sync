@@ -35,7 +35,7 @@ class EmailServiceTests(TestCase):
         expected_subject = "Confirm your email"
         expected_message = (
             f"Please click the following link to verify your email: "
-            f"{self.default_frontend_url}/email-confirmation/{self.uid}/{self.fixed_token}/"
+            f"{self.base_url}/email-confirmation/{self.uid}/{self.fixed_token}/"
         )
         expected_from_email = settings.DEFAULT_FROM_EMAIL
         expected_recipient_list = [self.user.email]
