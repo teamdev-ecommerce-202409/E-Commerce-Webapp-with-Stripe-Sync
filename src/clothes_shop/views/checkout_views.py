@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from clothes_shop.models.cart import CartItem
 from clothes_shop.models.order import Order
 from clothes_shop.permissions import IsAdmin, IsCustomer, IsGuest
 from clothes_shop.serializers.cart_item_serializers import (
@@ -60,6 +61,10 @@ class StripeCheckoutView(APIView):
             checkout_data_list=checkout_data_list,
         )
         return checkoutSession
+
+    def __clear_cart(self, user_id: int) -> None:
+        CartItem.objects.filter(user_id=user_id).delete()
+        return None
 
     def __create_order(
         self, user_id: int, checkout_session_id: str, cart_item_serializer: CartItemSerializer
@@ -117,6 +122,7 @@ class StripeCheckoutView(APIView):
         order_id = self.__create_order(
             request.user.id, checkout_session.checkout_session_id, cart_item_serializer
         )
+        self.__clear_cart(request.user.id)
         data = {"order_id": order_id, "url": checkout_session.url}
         return Response(data, status=status.HTTP_200_OK)
 
