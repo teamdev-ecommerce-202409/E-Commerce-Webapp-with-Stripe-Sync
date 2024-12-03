@@ -16,7 +16,11 @@ from clothes_shop.serializers.order_serializers import (
     OrderItemSerializer,
     OrderSerializer,
 )
-from clothes_shop.services.stripe_service import CheckoutData, StripeService
+from clothes_shop.services.stripe_service import (
+    CheckoutData,
+    CheckoutSession,
+    StripeService,
+)
 from clothes_shop.views.product_views import get_product
 
 logger = logging.getLogger(__name__)
@@ -42,7 +46,7 @@ class StripeCheckoutView(APIView):
 
     def __checkout(
         self, role: str, customer_id: str, cart_item_serializer: CartItemSerializer
-    ) -> str:
+    ) -> CheckoutSession:
         checkout_data_list: list[CheckoutData] = []
         for checkout_instance in cart_item_serializer:
             checkout_instance.is_valid()
@@ -51,16 +55,18 @@ class StripeCheckoutView(APIView):
             product = get_product(product_id)
             stripe_product_id = product.stripe_product_id
             checkout_data_list.append(CheckoutData(stripe_product_id, amount))
-        redirect_url = striep_service.checkout(
+        checkoutSession = striep_service.checkout(
             stripe_customer_id=customer_id if role != "guest" else None,
             checkout_data_list=checkout_data_list,
         )
-        return redirect_url
+        return checkoutSession
 
-    def __create_order(self, user_id: int, cart_item_serializer: CartItemSerializer) -> str:
+    def __create_order(
+        self, user_id: int, checkout_session_id: str, cart_item_serializer: CartItemSerializer
+    ) -> str:
         order_data = {
             "user_pk": user_id,
-            "stripe_checkout_session_id": None,
+            "stripe_checkout_session_id": checkout_session_id,
             "order_status": "pending",
             "total_price": 0,
         }
@@ -89,7 +95,6 @@ class StripeCheckoutView(APIView):
         items_serializer = OrderItemSerializer(data=cart_item_serializer, many=True)
         if items_serializer.is_valid():
             order = items_serializer.save()
-
         return order.id
 
     def post(self, request):
@@ -105,12 +110,14 @@ class StripeCheckoutView(APIView):
         ]
         role = request.user.role
         stripe_customer_id = request.user.stripe_customer_id
-        redirect_url = self.__checkout(
+        checkout_session = self.__checkout(
             role=role, customer_id=stripe_customer_id, cart_item_serializer=cart_item_serializer
         )
 
-        order_id = self.__create_order(request.user.id, cart_item_serializer)
-        data = {"order_id": order_id, "url": redirect_url}
+        order_id = self.__create_order(
+            request.user.id, checkout_session.checkout_session_id, cart_item_serializer
+        )
+        data = {"order_id": order_id, "url": checkout_session.url}
         return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request):

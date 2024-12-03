@@ -21,6 +21,12 @@ class CheckoutData:
         self.product_amount = product_amount
 
 
+class CheckoutSession:
+    def __init__(self, checkout_session_id: str, url: str) -> None:
+        self.checkout_session_id = checkout_session_id
+        self.url = url
+
+
 class Address:
     def __init__(self, state: str, city: str, line1: str, line2: str, postal_code: str) -> None:
         self.country = "JP"
@@ -89,7 +95,7 @@ class StripeService:
 
     def checkout(
         self, stripe_customer_id: str | None, checkout_data_list: list[CheckoutData]
-    ) -> str:
+    ) -> CheckoutSession:
         line_items: list[Any] = []
         for checkout_data in checkout_data_list:
             price: stripe.Price = self.__get_price(checkout_data.stripe_product_id)
@@ -104,7 +110,7 @@ class StripeService:
         if stripe_customer_id is not None:
             session_params["customer"] = stripe_customer_id
         session = stripe.checkout.Session.create(**session_params)
-        return session.url
+        return CheckoutSession(session["id"], session["url"])
 
     def get_checkout_session(self, checkout_session_id: str) -> Session:
         session: Session = stripe.checkout.Session.retrieve(checkout_session_id)
