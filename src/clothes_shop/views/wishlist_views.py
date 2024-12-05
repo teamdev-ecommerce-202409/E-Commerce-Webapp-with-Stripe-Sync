@@ -23,6 +23,12 @@ class WishListListCreateView(APIView):
         filters["user_id"] = user_id
         wishs = WishList.objects.filter(**filters).order_by("-created_at")
 
+        logger.warning("-------------------------------------")
+        logger.warning(request.user.is_authenticated)
+        logger.warning(request.user.id)
+        logger.warning(user_id)
+        logger.warning("-------------------------------------")
+
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_products = paginator.paginate_queryset(wishs, request)
@@ -35,6 +41,7 @@ class WishListListCreateView(APIView):
         user_id = request.user.id
         product_id = request.data.get("product_id")
         wish = request.data.get("wish")
+        is_public = request.data.get("is_public")
 
         if not product_id:
             errMsg = "product_idを設定してください。"
@@ -48,17 +55,14 @@ class WishListListCreateView(APIView):
             logger.error(errMsg)
             raise NotFound(detail=errMsg)
 
-        if wish == True:
+        if wish:
             WishList.objects.get_or_create(
-                user_id=user_id,
-                product_id=product_id,
-                defaults={"is_public": True},
+                user_id=user_id, product_id=product_id, is_public=is_public
             )
             return Response(
                 {"message": f"product_id:{product_id}をWishListに追加しました。", "wish": True},
                 status=status.HTTP_200_OK,
             )
-
         else:
             WishList.objects.filter(user_id=user_id, product_id=product_id).delete()
             return Response(
@@ -67,8 +71,7 @@ class WishListListCreateView(APIView):
             )
 
 
-class WishListDetailView(APIView):
-
+class WishListDetailPublicView(APIView):
     def get(self, request, *args, **kwargs):
         user_id = self.kwargs.get("userId")
         if not user_id:
@@ -81,5 +84,25 @@ class WishListDetailView(APIView):
         paginated_products = paginator.paginate_queryset(wishs, request)
 
         serializer_data = WishListSerializer(paginated_products, many=True).data
+        return paginator.get_paginated_response(serializer_data)
 
+
+class WishListDetailPrivateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user_id = self.kwargs.get("userId")
+        if not user_id:
+            raise NotFound(detail="User ID がありません.")
+
+        if request.user.id != user_id:
+            raise NotFound(detail="作成者しか閲覧できません.")
+
+        wishs = WishList.objects.filter(user_id=user_id)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        paginated_products = paginator.paginate_queryset(wishs, request)
+
+        serializer_data = WishListSerializer(paginated_products, many=True).data
         return paginator.get_paginated_response(serializer_data)

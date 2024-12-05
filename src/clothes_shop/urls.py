@@ -86,9 +86,14 @@ urlpatterns = [
         name="wishlist-list-create",
     ),
     path(
-        "api/wishlists/<int:userId>/",
-        wishlist_views.WishListDetailView.as_view(),
-        name="wishlist-detail",
+        "api/wishlists/<int:userId>/public/",
+        wishlist_views.WishListDetailPublicView.as_view(),
+        name="wishlist-detail-public",
+    ),
+    path(
+        "api/wishlists/<int:userId>/private/",
+        wishlist_views.WishListDetailPrivateView.as_view(),
+        name="wishlist-detail-private",
     ),
     # CartItem API URLs
     path(
