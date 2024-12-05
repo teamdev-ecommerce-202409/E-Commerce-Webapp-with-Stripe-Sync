@@ -20,17 +20,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = OrderItemSerializer(many=True)
-
+    order_items = OrderItemSerializer(many=True, read_only=True)
     user = serializers.SerializerMethodField(read_only=True)
     user_pk = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
 
     class Meta:
         model = Order
-
         fields = (
             "id",
             "user",
+            "stripe_checkout_session_id",
             "order_date",
             "order_status",
             "total_price",

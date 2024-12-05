@@ -6,6 +6,7 @@ from typing import Any
 
 import environ
 import stripe
+from requests import Session
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
@@ -20,10 +21,28 @@ class CheckoutData:
         self.product_amount = product_amount
 
 
+class CheckoutSession:
+    def __init__(self, checkout_session_id: str, url: str) -> None:
+        self.checkout_session_id = checkout_session_id
+        self.url = url
+
+
+class Address:
+    def __init__(self, state: str, city: str, line1: str, line2: str, postal_code: str) -> None:
+        self.country = "JP"
+        self.state = state
+        self.city = city
+        self.line1 = line1
+        self.line2 = line2
+        self.postal_code = postal_code
+
+
 class CustomerData:
-    def __init__(self, name: str, email: str) -> None:
+    def __init__(self, name: str, email: str, address: Address, shipping: Address) -> None:
         self.name = name
         self.email = email
+        self.address = address
+        self.shipping = shipping
 
 
 class StripeService:
@@ -37,7 +56,6 @@ class StripeService:
         stripe.Price.create(
             product=product.id,
             unit_amount=price,
-            tax_behavior="exclusive",
             currency="jpy",
         )
         return product.id
@@ -56,7 +74,6 @@ class StripeService:
             stripe.Price.create(
                 product=product_id,
                 unit_amount=newPrice,
-                tax_behavior="exclusive",
                 currency="jpy",
             )
         return None
@@ -76,31 +93,113 @@ class StripeService:
         stripe.Product.modify(id, active=False)
         return None
 
-    def checkout(self, checkout_data_list: list[CheckoutData]) -> str:
+    def checkout(
+        self, stripe_customer_id: str | None, checkout_data_list: list[CheckoutData]
+    ) -> CheckoutSession:
         line_items: list[Any] = []
         for checkout_data in checkout_data_list:
-            price_id: str = self.__get_price(checkout_data.stripe_product_id)
-            line_items.append({"price": price_id, "quantity": checkout_data.product_amount})
-        session = stripe.checkout.Session.create(
-            mode="payment",
-            line_items=line_items,
-            success_url=self.checkout_url_success,
-            cancel_url=self.checkout_url_cancel,
+            price: stripe.Price = self.__get_price(checkout_data.stripe_product_id)
+            line_items.append({"price": price, "quantity": checkout_data.product_amount})
+        session_params = {
+            "mode": "payment",
+            "line_items": line_items,
+            "success_url": self.checkout_url_success + "?session_id={CHECKOUT_SESSION_ID}",
+            "cancel_url": self.checkout_url_cancel,
+            "shipping_address_collection": {"allowed_countries": ["JP"]},
+        }
+        if stripe_customer_id is not None:
+            session_params["customer"] = stripe_customer_id
+        session = stripe.checkout.Session.create(**session_params)
+        return CheckoutSession(session["id"], session["url"])
+
+    def get_checkout_session(self, checkout_session_id: str) -> Session:
+        session: Session = stripe.checkout.Session.retrieve(checkout_session_id)
+        return session
+
+    def get_checkout_items(self, checkout_session_id: str) -> Session:
+        session: Session = stripe.checkout.Session.list_line_items(checkout_session_id)
+        return session
+
+    def get_checkout_list(self, stripe_customer_id: str, starting_after: str | None) -> Session:
+        session_params = {"customer": stripe_customer_id, "limit": 10}
+        if starting_after:
+            session_params["starting_after"] = starting_after
+        sessionList: Session = stripe.checkout.Session.list(**session_params)
+        return sessionList
+
+    def create_invoice(
+        self, stripe_customer_id: str, checkout_data_list: list[CheckoutData]
+    ) -> None:
+        invoice: stripe.Invoice = stripe.Invoice.create(
+            customer=stripe_customer_id,
+            collection_method="send_invoice",
+            days_until_due=30,
         )
-        return session.url
+        for checkout_data in checkout_data_list:
+            price: stripe.Price = self.__get_price(checkout_data.stripe_product_id)
+            stripe.InvoiceItem.create(
+                customer=stripe_customer_id,
+                price_data={
+                    "product": checkout_data.stripe_product_id,
+                    "currency": "jpy",
+                    "unit_amount": price.unit_amount,
+                },
+                quantity=checkout_data.product_amount,
+                invoice=invoice.id,
+            )
+        stripe.Invoice.send_invoice(invoice.id)
+        return
 
     def create_customer(self, customerData: CustomerData) -> str:
         customer: stripe.Customer = stripe.Customer.create(
             name=customerData.name,
             email=customerData.email,
+            address={
+                "country": customerData.address.country,
+                "state": customerData.address.state,
+                "city": customerData.address.city,
+                "line1": customerData.address.line1,
+                "line2": customerData.address.line2,
+                "postal_code": customerData.address.postal_code,
+            },
+            shipping={
+                "name": customerData.name,
+                "address": {
+                    "country": customerData.shipping.country,
+                    "state": customerData.shipping.state,
+                    "city": customerData.shipping.city,
+                    "line1": customerData.shipping.line1,
+                    "line2": customerData.shipping.line2,
+                    "postal_code": customerData.shipping.postal_code,
+                },
+            },
         )
-        return customer.id
+        return customer["id"]
 
     def update_customer(self, stripe_customer_id: str, customerData: CustomerData) -> None:
         stripe.Customer.modify(
             stripe_customer_id,
             name=customerData.name,
             email=customerData.email,
+            address={
+                "country": customerData.address.country,
+                "state": customerData.address.state,
+                "city": customerData.address.city,
+                "line1": customerData.address.line1,
+                "line2": customerData.address.line2,
+                "postal_code": customerData.address.postal_code,
+            },
+            shipping={
+                "name": customerData.name,
+                "address": {
+                    "country": customerData.shipping.country,
+                    "state": customerData.shipping.state,
+                    "city": customerData.shipping.city,
+                    "line1": customerData.shipping.line1,
+                    "line2": customerData.shipping.line2,
+                    "postal_code": customerData.shipping.postal_code,
+                },
+            },
         )
         return None
 

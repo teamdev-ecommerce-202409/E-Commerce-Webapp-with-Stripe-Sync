@@ -7,11 +7,10 @@ from clothes_shop.views import (
     check_access_views,
     checkout_views,
     favorite_views,
+    invoice_views,
     order_views,
-    payment_views,
     product_views,
     review_views,
-    shipping_views,
     token_views,
     user_views,
     wishlist_views,
@@ -20,8 +19,14 @@ from clothes_shop.views import (
 app_name = "clothes_shop"
 
 urlpatterns = [
+    # Token API URLs
     path("api/token/", token_views.CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path(
+        "api/token/guest/",
+        token_views.GuestTokenObtainPairView.as_view(),
+        name="guest_token_obtain_pair",
+    ),
     # Product API URLs
     path("api/products/", product_views.ProductListView.as_view(), name="product-list"),
     path(
@@ -103,27 +108,6 @@ urlpatterns = [
         order_views.OrderItemDetailView.as_view(),
         name="orderitem-detail",
     ),
-    # Payment API URLs
-    path(
-        "api/payments/", payment_views.PaymentListCreateView.as_view(), name="payment-list-create"
-    ),
-    path(
-        "api/payments/<int:pk>/", payment_views.PaymentDetailView.as_view(), name="payment-detail"
-    ),
-    # Shipping API URLs
-    path(
-        "api/shippings/",
-        shipping_views.ShippingListCreateView.as_view(),
-        name="shipping-list-create",
-    ),
-    path(
-        "api/shippings/<int:pk>/",
-        shipping_views.ShippingDetailView.as_view(),
-        name="shipping-detail",
-    ),
-    # Size API URLs
-    path("api/sizes/", category_views.SizeListCreateView.as_view(), name="size-list-create"),
-    path("api/sizes/<int:pk>/", category_views.SizeDetailView.as_view(), name="size-detail"),
     # Size API URLs
     path("api/sizes/", category_views.SizeListCreateView.as_view(), name="size-list-create"),
     path("api/sizes/<int:pk>/", category_views.SizeDetailView.as_view(), name="size-detail"),
@@ -148,4 +132,24 @@ urlpatterns = [
     path("api/categories/", category_views.CategoryListView.as_view(), name="category-list"),
     # Stripe Checkout
     path("api/checkout/", checkout_views.StripeCheckoutView.as_view(), name="stripe-checkout"),
+    path(
+        "api/checkout/sessions/",
+        checkout_views.StripeCheckoutSessionView.as_view(),
+        name="stripe-checkout-session",
+    ),
+    path(
+        "api/checkout/sessions/items/",
+        checkout_views.StripeCheckoutItemsView.as_view(),
+        name="stripe-checkout-items",
+    ),
+    path(
+        "api/checkout/sessions/list/",
+        checkout_views.StripeCheckoutListView.as_view(),
+        name="stripe-checkout-list",
+    ),
+    path(
+        "api/invoice/",
+        invoice_views.StripeInvoiceView.as_view(),
+        name="stripe-invoice",
+    ),
 ]

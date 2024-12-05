@@ -2,7 +2,7 @@ import logging
 
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
-from rest_framework.exceptions import APIException, NotFound, PermissionDenied
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -27,17 +27,14 @@ class OrderListCreateView(APIView):
             orders = Order.objects.filter(**filters).order_by("-created_at")
         else:
             if request.user.is_staff:
-
                 orders = Order.objects.all().order_by("-created_at")
             else:
                 errMsg = f"ログインユーザー {request.user.id} はadminユーザーではありません。"
                 logger.error(errMsg)
                 raise PermissionDenied(detail=errMsg)
-
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_products = paginator.paginate_queryset(orders, request)
-
         serializer_data = OrderSerializer(paginated_products, many=True).data
         return paginator.get_paginated_response(serializer_data)
 
@@ -61,7 +58,7 @@ class OrderDetailView(APIView):
         order = get_object_or_404(Order, pk=pk)
         if not request.user.is_staff and request.user.id != order.user.id:
             errMsg = (
-                f"ログインユーザー はadminユーザーではなく、かつ当該orderの注文者でもありません。"
+                "ログインユーザー はadminユーザーではなく、かつ当該orderの注文者でもありません。"
             )
             logger.error(errMsg)
             raise PermissionDenied(detail=errMsg)

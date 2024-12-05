@@ -10,7 +10,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from clothes_shop.models import (
     Brand,
-    CartItem,
     ClothesType,
     Order,
     OrderItem,
@@ -19,7 +18,6 @@ from clothes_shop.models import (
     Target,
     User,
 )
-from clothes_shop.serializers.order_serializers import OrderSerializer
 
 
 class OrderTests(APITestCase):
@@ -63,7 +61,6 @@ class OrderTests(APITestCase):
             email=fake.email(),
             role="registered",
             email_validated_at=timezone.now(),
-            address=fake.address(),
             date_joined=timezone.now(),
             is_active=True,
             is_staff=True,
@@ -74,7 +71,6 @@ class OrderTests(APITestCase):
             email=fake.email(),
             role="registered",
             email_validated_at=timezone.now(),
-            address=fake.address(),
             date_joined=timezone.now(),
             is_active=True,
             is_staff=False,
@@ -91,6 +87,7 @@ class OrderTests(APITestCase):
         ]
         # ログインユーザーオーダーを作成
         self.order_other = Order.objects.create(
+            stripe_checkout_session_id="dummy_1",
             user=self.user_login,
             order_status=random.choice(status_choices),
             total_price=0,
@@ -107,6 +104,7 @@ class OrderTests(APITestCase):
 
         # 他ユーザーオーダーを作成
         self.order_other = Order.objects.create(
+            stripe_checkout_session_id="dummy_2",
             user=self.user_other,
             order_status=random.choice(status_choices),
             total_price=0,

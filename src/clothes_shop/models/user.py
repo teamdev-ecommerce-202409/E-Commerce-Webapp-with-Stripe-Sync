@@ -8,19 +8,36 @@ from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, name=None, password=None, **extra_fields):
+    def create_user(self, email, name, password, role, stripe_customer_id, **extra_fields):
         if not email:
             raise ValueError("Email is required")
+        if not name:
+            raise ValueError("Name is required")
+        if not password:
+            raise ValueError("Password is required")
+        if not role or (role not in ["admin", "customer", "guest"]):
+            raise ValueError("role is required ('admin' or 'customer' or 'guest')")
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name, **extra_fields)
+        user = self.model(
+            email=email,
+            name=name,
+            role=role,
+            stripe_customer_id=stripe_customer_id,
+            **extra_fields,
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
+    def create_guest(self):
+        user = self.model(email=None, name=None, role="guest")
+        user.save(using=self._db)
+        return
+
     def create_superuser(self, email, name=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        return self.create_user(email, name, password, **extra_fields)
+        return self.create_user(email, name, password)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -30,11 +47,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128, null=True)
     role = models.CharField(
         max_length=50,
-        choices=[("guest", "Guest"), ("registered", "Registered"), ("admin", "Admin")],
+        choices=[("guest", "Guest"), ("customer", "Customer"), ("admin", "Admin")],
         default="guest",
     )  # 次善の策としてmodelのrole項目をデフォルトでguest
     email_validated_at = models.DateTimeField(null=True, blank=True)
-    address = models.TextField(blank=True)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
@@ -46,9 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )  # Djangoのデフォルトユーザーモデル(AbstractUser,AbstractBaseUser)で、ユーザーのログイン履歴やアカウント作成日を管理するためにmust
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     objects = UserManager()
-
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
 

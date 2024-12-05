@@ -1,11 +1,9 @@
 from rest_framework import serializers
 
-
-class CheckoutSerializer(serializers.Serializer):
-    product_id = serializers.CharField(max_length=255)
-    amount = serializers.IntegerField()
+from clothes_shop.models.checkout import Checkout
 
 
-class CheckoutListSerializer(serializers.ListSerializer):
-    child = CheckoutSerializer()
-    allow_empty = False
+class CheckoutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Checkout
+        fields = ("user", "stripe_checkout_session_id", "shipping_date")

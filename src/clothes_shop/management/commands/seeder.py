@@ -15,7 +15,7 @@ from clothes_shop.models.order import Order, OrderItem
 from clothes_shop.models.product import Product
 from clothes_shop.models.user import User
 from clothes_shop.models.user_interaction import Favorite, WishList
-from clothes_shop.services.stripe_service import CustomerData, StripeService
+from clothes_shop.services.stripe_service import Address, CustomerData, StripeService
 
 BASE_DIR = Path(__file__).resolve().parents[4]
 env = environ.Env()
@@ -74,18 +74,29 @@ class Command(BaseCommand):
             )
 
         for i in range(demo_user_count):
-            role_val = "admin" if i in (1, 2) else "registered"
+            role_val = "admin" if i in (1, 2) else "customer"
             name = fake.name()
             email = fake.email()
+            address = Address(
+                **{
+                    "state": "state_1",
+                    "city": "city_1",
+                    "line1": "line_A",
+                    "line2": "line_B",
+                    "postal_code": "123-4567",
+                }
+            )
+            shipping = address
             user, created = User.objects.get_or_create(
                 name=name,
                 defaults={  # 重複がない場合のみこれを使って新規作成
-                    "stripe_customer_id": stripe_service.create_customer(CustomerData(name, email)),
+                    "stripe_customer_id": stripe_service.create_customer(
+                        CustomerData(name, email, address, shipping)
+                    ),
                     "email": email,
                     "role": role_val,
                     "email_validated_at": timezone.now(),
                     "date_joined": timezone.now(),
-                    "address": fake.address(),
                     "is_active": True,
                     "is_staff": True if role_val == "admin" else False,
                 },
@@ -148,6 +159,7 @@ class Command(BaseCommand):
                 ]
 
                 order = Order.objects.create(
+                    stripe_checkout_session_id=fake.text(max_nb_chars=255),
                     user=user,
                     order_status=random.choice(status_choices),
                     total_price=0,

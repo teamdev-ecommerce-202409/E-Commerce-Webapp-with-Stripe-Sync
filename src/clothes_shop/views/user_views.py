@@ -1,25 +1,24 @@
 import logging
-import stripe
 
+import stripe
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import APIException, NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-
 from clothes_shop.models.user import User
 from clothes_shop.serializers.user_serializers import (
+    ConfirmEmailSerializer,
+    ResendConfirmationEmailSerializer,
     UserProfileSerializer,
     UserSerializer,
     UserSignupSerializer,
-    ConfirmEmailSerializer,
-    ResendConfirmationEmailSerializer
 )
-from clothes_shop.services.stripe_service import CustomerData, StripeService
 from clothes_shop.services.email_service import EmailService
+from clothes_shop.services.stripe_service import Address, CustomerData, StripeService
 
 logger = logging.getLogger(__name__)
 stripe_service = StripeService()
@@ -47,10 +46,28 @@ class UserListCreateView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
-            customerData = CustomerData(name=request.data["name"], email=request.data["email"])
+            customerData = CustomerData(
+                name=request.data["name"],
+                email=request.data["email"],
+                address=Address(
+                    state=request.data["address"]["state"],
+                    city=request.data["address"]["city"],
+                    line1=request.data["address"]["line1"],
+                    line2=request.data["address"]["line2"],
+                    postal_code=request.data["address"]["postal_code"],
+                ),
+                shipping=Address(
+                    state=request.data["shipping"]["state"],
+                    city=request.data["shipping"]["city"],
+                    line1=request.data["shipping"]["line1"],
+                    line2=request.data["shipping"]["line2"],
+                    postal_code=request.data["shipping"]["postal_code"],
+                ),
+            )
             stripe_customer_id = stripe_service.create_customer(customerData)
             serializer.save(stripe_customer_id=stripe_customer_id)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            response_serializer = self.get_serializer(instance=serializer.instance)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             logger.error(e.detail)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
@@ -71,7 +88,24 @@ class UserDetailView(APIView):
         if not serializer.is_valid():
             logger.error(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        customerData = CustomerData(name=request.data["name"], email=request.data["email"])
+        customerData = CustomerData(
+            name=request.data["name"],
+            email=request.data["email"],
+            address=Address(
+                state=request.data["address"]["state"],
+                city=request.data["address"]["city"],
+                line1=request.data["address"]["line1"],
+                line2=request.data["address"]["line2"],
+                postal_code=request.data["address"]["postal_code"],
+            ),
+            shipping=Address(
+                state=request.data["shipping"]["state"],
+                city=request.data["shipping"]["city"],
+                line1=request.data["shipping"]["line1"],
+                line2=request.data["shipping"]["line2"],
+                postal_code=request.data["shipping"]["postal_code"],
+            ),
+        )
         stripe_service.update_customer(user.stripe_customer_id, customerData)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -91,6 +125,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+
 class UserSignupView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSignupSerializer
@@ -98,44 +133,46 @@ class UserSignupView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         try:
+            validated_data = serializer.validated_data
+            address_data = validated_data["address"]
+            shipping_data = validated_data["shipping"]
             customer_data = CustomerData(
-                name=serializer.validated_data["name"],
-                email=serializer.validated_data["email"],
+                name=validated_data["name"],
+                email=validated_data["email"],
+                address=Address(**address_data),
+                shipping=Address(**shipping_data),
             )
             stripe_customer_id = stripe_service.create_customer(customer_data)
-            
             user = serializer.save(stripe_customer_id=stripe_customer_id)
-
             try:
                 EmailService.send_email(user, email_type="confirmation")
             except Exception as e:
                 logger.error(f"確認メール送信失敗: {e}")
                 return Response(
-                        {"error": "確認メールの再送信に失敗しました。"},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    ) 
+                    {"error": "確認メールの再送信に失敗しました。"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
         except stripe.error.StripeError as e:
             logger.error(f"Stripeエラー: {e}")
             raise ValidationError({"error": "Stripeの顧客登録に失敗しました。"})
-
         except ValidationError as e:
             logger.error(f"バリデーションエラー: {e}")
             raise ValidationError({"error": "入力データに不正があります。"})
-
         except Exception as e:
             logger.error(f"予期しないエラー: {e}")
             raise ValidationError({"error": "ユーザー登録中にエラーが発生しました。"})
 
     def create(self, request, *args, **kwargs):
         email = request.data.get("email")
-
         existing_user = User.objects.filter(email=email).first()
         if existing_user:
             if not existing_user.is_active:
                 try:
                     EmailService.send_email(existing_user, email_type="confirmation")
                     return Response(
-                        {"error": "メール認証が未完了です。メールを再送信したのでメールを確認し、リンクをクリックしてメール認証を完了させてください。"},
+                        {
+                            "error": "メール認証が未完了です。メールを再送信したのでメールを確認し、リンクをクリックしてメール認証を完了させてください。"
+                        },
                         status=status.HTTP_200_OK,
                     )
                 except Exception as e:
@@ -166,7 +203,9 @@ class UserSignupView(generics.CreateAPIView):
             )
 
 
-class ResendConfirmationEmailView(generics.GenericAPIView):# サインアップ後に未認証ユーザーへ確認メールを送信するビュー(未使用)
+class ResendConfirmationEmailView(
+    generics.GenericAPIView
+):  # サインアップ後に未認証ユーザーへ確認メールを送信するビュー(未使用)
     serializer_class = ResendConfirmationEmailSerializer
 
     def post(self, request, *args, **kwargs):
@@ -182,7 +221,7 @@ class ResendConfirmationEmailView(generics.GenericAPIView):# サインアップ�
 
             EmailService.send_email(user, email_type="confirmation")
             return Response({"message": "確認メールを送信しました。"}, status=status.HTTP_200_OK)
-        
+
         except User.DoesNotExist:
             logger.error(f"ユーザーが見つかりません: {serializer.validated_data['email']}")
             return Response(
@@ -191,9 +230,14 @@ class ResendConfirmationEmailView(generics.GenericAPIView):# サインアップ�
             )
         except Exception as e:
             logger.error(f"メール送信失敗: {e}")
-            return Response({"error": "メール送信に失敗しました。"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "メール送信に失敗しました。"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 
 token_generator = PasswordResetTokenGenerator()
+
 
 class EmailConfirmationView(generics.GenericAPIView):
     serializer_class = ConfirmEmailSerializer
@@ -224,4 +268,7 @@ class EmailConfirmationView(generics.GenericAPIView):
             return Response({"message": "メール認証が完了しました。"}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.error(f"メール認証中のエラー: {e}")
-            return Response({"error": "予期せぬエラーが発生しました。"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "予期せぬエラーが発生しました。"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
