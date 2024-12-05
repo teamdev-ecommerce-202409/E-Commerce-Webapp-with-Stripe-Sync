@@ -39,6 +39,8 @@ EMAIL_USE_SSL=＜SSLを使用する場合はTrue＞
 EMAIL_HOST_USER=＜SMTP認証に使用するメールアドレス＞ # Gmailメールアドレスなど
 EMAIL_HOST_PASSWORD=＜SMTP認証に使用するアプリパスワード＞ # Googleアカウントなら設定済み
 DEFAULT_FROM_EMAIL=＜メール送信時のデフォルト送信元アドレス＞ # Gmailメールアドレスなど
+
+LOGGING_DIR=src/logs
 ```
 
 # 開発手順
