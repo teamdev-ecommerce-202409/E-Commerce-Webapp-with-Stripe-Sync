@@ -25,9 +25,9 @@ class WishListListCreateView(APIView):
 
         paginator = PageNumberPagination()
         paginator.page_size = 10
-        paginated_products = paginator.paginate_queryset(wishs, request)
+        paginated_wishlist = paginator.paginate_queryset(wishs, request)
 
-        serializer_data = WishListSerializer(paginated_products, many=True).data
+        serializer_data = WishListSerializer(paginated_wishlist, many=True).data
 
         return paginator.get_paginated_response(serializer_data)
 
