@@ -23,12 +23,6 @@ class WishListListCreateView(APIView):
         filters["user_id"] = user_id
         wishs = WishList.objects.filter(**filters).order_by("-created_at")
 
-        logger.warning("-------------------------------------")
-        logger.warning(request.user.is_authenticated)
-        logger.warning(request.user.id)
-        logger.warning(user_id)
-        logger.warning("-------------------------------------")
-
         paginator = PageNumberPagination()
         paginator.page_size = 10
         paginated_products = paginator.paginate_queryset(wishs, request)

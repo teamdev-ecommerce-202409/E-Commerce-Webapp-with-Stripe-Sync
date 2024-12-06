@@ -94,6 +94,7 @@ class WishListListCreateViewTests(APITestCase):
             "user_id": self.user.id,
             "product_id": self.product2.id,
             "wish": True,
+            "is_public": True,
         }
         response = self.client.post(self.list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
